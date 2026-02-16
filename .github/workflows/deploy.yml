@@ -16,8 +16,8 @@ jobs:
       - name: Backup .env files
         run: |
           mkdir -p /tmp/env_backup
-          [ -f backend/.env ] && cp backend/.env /tmp/env_backup/backend.env
-          [ -f frontend/.env ] && cp frontend/.env /tmp/env_backup/frontend.env
+          ([ -f backend/.env ] && cp backend/.env /tmp/env_backup/backend.env) || echo "backend .env not found, skipping backup"
+          ([ -f frontend/.env ] && cp frontend/.env /tmp/env_backup/frontend.env) || echo "frontend .env not found, skipping backup"
         continue-on-error: true
 
       - name: Checkout Code
@@ -27,8 +27,8 @@ jobs:
 
       - name: Restore .env files
         run: |
-          [ -f /tmp/env_backup/backend.env ] && cp /tmp/env_backup/backend.env backend/.env
-          [ -f /tmp/env_backup/frontend.env ] && cp /tmp/env_backup/frontend.env frontend/.env
+          ([ -f /tmp/env_backup/backend.env ] && cp /tmp/env_backup/backend.env backend/.env) || echo "backend .env backup not found, skipping restore"
+          ([ -f /tmp/env_backup/frontend.env ] && cp /tmp/env_backup/frontend.env frontend/.env) || echo "frontend .env backup not found, skipping restore"
         continue-on-error: true
 
       - name: Setup Node.js
@@ -36,6 +36,9 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
 
       - name: Install Backend Dependencies
         working-directory: ./backend
