@@ -5,7 +5,7 @@ import { getMyOrders, reset } from '../store/slices/orderSlice';
 
 const Orders = () => {
     const dispatch = useDispatch();
-    const { orders, isLoading, isError, message } = useSelector((state) => state.orders);
+    const { orders, isLoading } = useSelector((state) => state.orders);
 
     useEffect(() => {
         dispatch(getMyOrders());

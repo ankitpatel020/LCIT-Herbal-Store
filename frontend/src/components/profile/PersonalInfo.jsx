@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { updateProfile, reset } from '../../store/slices/authSlice';
+import { updateProfile } from '../../store/slices/authSlice';
 import toast from 'react-hot-toast';
 
 const PersonalInfo = ({ user }) => {
     const dispatch = useDispatch();
-    const { isError, isSuccess, message, isLoading } = useSelector((state) => state.auth);
+    const { isLoading } = useSelector((state) => state.auth);
 
     const [formData, setFormData] = useState({
         name: '',

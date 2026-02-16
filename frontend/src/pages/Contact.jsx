@@ -1,9 +1,8 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 import emailjs from '@emailjs/browser';
 
 const HelpCenter = () => {
-    const formRef = useRef();
     const [isLoading, setIsLoading] = useState(false);
     const [activeCategory, setActiveCategory] = useState('all');
     const [openFAQ, setOpenFAQ] = useState(null);
@@ -183,8 +182,8 @@ const HelpCenter = () => {
                                 key={cat.id}
                                 onClick={() => setActiveCategory(activeCategory === cat.id ? 'all' : cat.id)}
                                 className={`flex flex-col items-center gap-3 p-5 rounded-2xl border-2 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg ${activeCategory === cat.id
-                                        ? 'bg-green-600 text-white border-green-600 shadow-lg shadow-green-200'
-                                        : `bg-white ${cat.color} border-transparent shadow-md`
+                                    ? 'bg-green-600 text-white border-green-600 shadow-lg shadow-green-200'
+                                    : `bg-white ${cat.color} border-transparent shadow-md`
                                     }`}
                             >
                                 <span className="text-3xl">{cat.icon}</span>

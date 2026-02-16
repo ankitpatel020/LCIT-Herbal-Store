@@ -16,9 +16,9 @@ const Footer = () => {
                         </p>
                         <div className="flex space-x-4">
                             {/* Social Icons Placeholders */}
-                            <a href="#" className="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center hover:bg-green-600 transition-colors text-sm">IG</a>
-                            <a href="#" className="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center hover:bg-green-600 transition-colors text-sm">FB</a>
-                            <a href="#" className="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center hover:bg-green-600 transition-colors text-sm">LN</a>
+                            <button className="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center hover:bg-green-600 transition-colors text-sm text-white">IG</button>
+                            <button className="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center hover:bg-green-600 transition-colors text-sm text-white">FB</button>
+                            <button className="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center hover:bg-green-600 transition-colors text-sm text-white">LN</button>
                         </div>
                     </div>
 
