@@ -2,7 +2,7 @@ name: Deploy to EC2
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   deploy:
@@ -16,8 +16,8 @@ jobs:
       - name: Backup .env files
         run: |
           mkdir -p /tmp/env_backup
-          if [ -f backend/.env ]; then cp backend/.env /tmp/env_backup/backend.env; fi
-          if [ -f frontend/.env ]; then cp frontend/.env /tmp/env_backup/frontend.env; fi
+          [ -f backend/.env ] && cp backend/.env /tmp/env_backup/backend.env
+          [ -f frontend/.env ] && cp frontend/.env /tmp/env_backup/frontend.env
         continue-on-error: true
 
       - name: Checkout Code
@@ -27,18 +27,19 @@ jobs:
 
       - name: Restore .env files
         run: |
-          if [ -f /tmp/env_backup/backend.env ]; then cp /tmp/env_backup/backend.env backend/.env; fi
-          if [ -f /tmp/env_backup/frontend.env ]; then cp /tmp/env_backup/frontend.env frontend/.env; fi
+          [ -f /tmp/env_backup/backend.env ] && cp /tmp/env_backup/backend.env backend/.env
+          [ -f /tmp/env_backup/frontend.env ] && cp /tmp/env_backup/frontend.env frontend/.env
         continue-on-error: true
 
-      - name: Setup Node.js ${{ matrix.node-version }}
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
+          cache: npm
 
       - name: Install Backend Dependencies
         working-directory: ./backend
-        run: npm ci
+        run: npm ci --production
 
       - name: Install Frontend Dependencies
         working-directory: ./frontend
@@ -50,4 +51,6 @@ jobs:
 
       - name: Restart Backend with PM2
         working-directory: ./backend
-        run: pm2 restart backend || pm2 start server.js --name backend
+        run: |
+          pm2 reload backend || pm2 start server.js --name backend
+          pm2 save
