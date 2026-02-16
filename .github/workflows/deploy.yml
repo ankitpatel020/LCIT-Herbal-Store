@@ -1,0 +1,53 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    strategy:
+      matrix:
+        node-version: [22.x]
+
+    steps:
+      - name: Backup .env files
+        run: |
+          mkdir -p /tmp/env_backup
+          if [ -f backend/.env ]; then cp backend/.env /tmp/env_backup/backend.env; fi
+          if [ -f frontend/.env ]; then cp frontend/.env /tmp/env_backup/frontend.env; fi
+        continue-on-error: true
+
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          clean: true
+
+      - name: Restore .env files
+        run: |
+          if [ -f /tmp/env_backup/backend.env ]; then cp /tmp/env_backup/backend.env backend/.env; fi
+          if [ -f /tmp/env_backup/frontend.env ]; then cp /tmp/env_backup/frontend.env frontend/.env; fi
+        continue-on-error: true
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install Backend Dependencies
+        working-directory: ./backend
+        run: npm ci
+
+      - name: Install Frontend Dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Build Frontend
+        working-directory: ./frontend
+        run: npm run build
+
+      - name: Restart Backend with PM2
+        working-directory: ./backend
+        run: pm2 restart backend || pm2 start server.js --name backend
