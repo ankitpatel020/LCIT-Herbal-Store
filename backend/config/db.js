@@ -4,7 +4,14 @@ const connectDB = async () => {
   let retries = 5;
   while (retries) {
     try {
-      const conn = await mongoose.connect(process.env.MONGODB_URI, {
+      // Use MONGO_URI from env (fallback to MONGODB_URI for backward compatibility)
+      const uri = process.env.MONGO_URI || process.env.MONGODB_URI;
+
+      if (!uri) {
+        throw new Error("MONGO_URI environment variable is not defined");
+      }
+
+      const conn = await mongoose.connect(uri, {
         useNewUrlParser: true,
         useUnifiedTopology: true,
       });
