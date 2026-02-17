@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: ankitpatel020/lcit-frontend:latest
+          image: ankit4455/lcit-frontend:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 80
