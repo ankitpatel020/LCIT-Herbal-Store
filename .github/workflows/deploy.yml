@@ -1,59 +1,94 @@
-name: Deploy to EC2
+name: CI/CD Pipeline
 
 on:
   push:
-    branches: ["main"]
+    branches: [ "main" ]
 
 jobs:
-  deploy:
-    runs-on: self-hosted
+  build-and-push:
+    runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        node-version: [22.x]
+    outputs:
+      image_tag: ${{ steps.vars.outputs.TAG }}
 
     steps:
-      - name: Backup .env files
-        run: |
-          mkdir -p /tmp/env_backup
-          ([ -f backend/.env ] && cp backend/.env /tmp/env_backup/backend.env) || echo "backend .env not found, skipping backup"
-          ([ -f frontend/.env ] && cp frontend/.env /tmp/env_backup/frontend.env) || echo "frontend .env not found, skipping backup"
-        continue-on-error: true
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      - name: Checkout Code
-        uses: actions/checkout@v4
-        with:
-          clean: true
+    - name: Set image tag
+      id: vars
+      run: echo "TAG=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
 
-      - name: Restore .env files
-        run: |
-          ([ -f /tmp/env_backup/backend.env ] && cp /tmp/env_backup/backend.env backend/.env) || echo "backend .env backup not found, skipping restore"
-          ([ -f /tmp/env_backup/frontend.env ] && cp /tmp/env_backup/frontend.env frontend/.env) || echo "frontend .env backup not found, skipping restore"
-        continue-on-error: true
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: npm
-          cache-dependency-path: |
-            backend/package-lock.json
-            frontend/package-lock.json
+    - name: Build and push Frontend
+      uses: docker/build-push-action@v5
+      with:
+        context: ./frontend
+        push: true
+        tags: |
+          ${{ secrets.DOCKER_USERNAME }}/lcit-frontend:latest
+          ${{ secrets.DOCKER_USERNAME }}/lcit-frontend:${{ steps.vars.outputs.TAG }}
 
-      - name: Install Backend Dependencies
-        working-directory: ./backend
-        run: npm ci --production
+    - name: Build and push Backend
+      uses: docker/build-push-action@v5
+      with:
+        context: ./backend
+        push: true
+        tags: |
+          ${{ secrets.DOCKER_USERNAME }}/lcit-backend:latest
+          ${{ secrets.DOCKER_USERNAME }}/lcit-backend:${{ steps.vars.outputs.TAG }}
 
-      - name: Install Frontend Dependencies
-        working-directory: ./frontend
-        run: npm ci
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
 
-      - name: Build Frontend
-        working-directory: ./frontend
-        run: npm run build
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      - name: Restart Backend with PM2
-        working-directory: ./backend
-        run: |
-          pm2 reload backend || pm2 start server.js --name backend
-          pm2 save
+    - name: Copy k8s files to EC2
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+        source: "k8s/*"
+        target: "~/app"
+
+    - name: Deploy to Kubernetes
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          if command -v k3s &> /dev/null; then
+            export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+            alias kubectl='k3s kubectl'
+          fi
+
+          cd ~/app/k8s
+
+          echo "Checking cluster..."
+          kubectl get nodes
+
+          echo "Applying manifests..."
+          kubectl apply -f mongo.yaml
+          kubectl apply -f backend.yaml
+          kubectl apply -f frontend.yaml
+          kubectl apply -f ingress.yaml
+
+          echo "Restarting deployments..."
+          kubectl rollout restart deployment/backend
+          kubectl rollout restart deployment/frontend
+
+          echo "Waiting for rollout..."
+          kubectl rollout status deployment/backend
+          kubectl rollout status deployment/frontend
+
+          echo "Deployment successful."
