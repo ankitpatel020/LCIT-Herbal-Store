@@ -125,7 +125,7 @@ const ProductDetails = () => {
                             {/* Hot Deal Badge on Details Page */}
                             {totalDiscountPercent > 0 && (
                                 <span className="absolute top-4 right-4 bg-green-600 text-white text-sm font-bold px-4 py-1.5 rounded-md shadow-sm z-10">
-                                    {totalDiscountPercent}% OFF
+                                    Hot Deal
                                 </span>
                             )}
 
@@ -164,14 +164,19 @@ const ProductDetails = () => {
                             <span className="text-gray-600">{reviewCount} Verified Reviews</span>
                         </div>
 
-                        <div className="flex items-center gap-4 mb-6">
-                            {totalDiscountPercent > 0 && (
-                                <div className="flex items-center text-green-600 font-bold text-3xl">
-                                    <svg className="w-6 h-6 mr-1 fill-current" viewBox="0 0 24 24"><path d="M11 4V17.1716L7.41421 13.5858L6 15L12 21L18 15L16.5858 13.5858L13 17.1716V4H11Z" /></svg>
-                                    {totalDiscountPercent}%
-                                </div>
-                            )}
+                        <div className="flex items-baseline gap-4 mb-6">
                             <span className="text-5xl font-bold text-gray-900">₹{finalPrice.toFixed(0)}</span>
+                            {totalDiscountPercent > 0 && (
+                                <>
+                                    <span className="text-2xl text-gray-400 line-through font-medium">
+                                        ₹{referencePrice.toLocaleString('en-IN')}
+                                    </span>
+                                    <span className="flex items-center text-green-600 font-bold text-xl">
+                                        <svg className="w-5 h-5 mr-1 fill-current" viewBox="0 0 24 24"><path d="M11 4V17.1716L7.41421 13.5858L6 15L12 21L18 15L16.5858 13.5858L13 17.1716V4H11Z" /></svg>
+                                        {totalDiscountPercent}% OFF
+                                    </span>
+                                </>
+                            )}
                         </div>
 
                         {totalDiscountPercent > 0 && (

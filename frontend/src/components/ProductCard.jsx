@@ -109,18 +109,18 @@ const ProductCard = ({ product }) => {
 
                 <div className="mt-auto flex items-end justify-between gap-2">
                     <div className="flex flex-col">
+                        <span className="text-xl font-bold text-gray-900">₹{finalPrice.toFixed(0)}</span>
                         {totalDiscountPercent > 0 && (
-                            <div className="flex items-center gap-2 mb-1">
-                                <span className="flex items-center text-green-600 font-bold text-lg leading-none">
-                                    <svg className="w-4 h-4 mr-0.5 fill-current" viewBox="0 0 24 24"><path d="M11 4V17.1716L7.41421 13.5858L6 15L12 21L18 15L16.5858 13.5858L13 17.1716V4H11Z" /></svg>
-                                    {totalDiscountPercent}%
+                            <div className="flex items-center gap-2 mt-1">
+                                <span className="text-gray-400 line-through text-xs font-medium">
+                                    ₹{referencePrice.toLocaleString('en-IN')}
                                 </span>
-                                <span className="text-gray-400 line-through text-md font-medium">
-                                    {referencePrice.toLocaleString('en-IN')}
+                                <span className="flex items-center text-green-600 font-bold text-xs leading-none">
+                                    <svg className="w-3 h-3 mr-0.5 fill-current" viewBox="0 0 24 24"><path d="M11 4V17.1716L7.41421 13.5858L6 15L12 21L18 15L16.5858 13.5858L13 17.1716V4H11Z" /></svg>
+                                    {totalDiscountPercent}% off
                                 </span>
                             </div>
                         )}
-                        <span className="text-2xl font-bold text-gray-900">₹{finalPrice.toFixed(0)}</span>
                     </div>
 
                     <button

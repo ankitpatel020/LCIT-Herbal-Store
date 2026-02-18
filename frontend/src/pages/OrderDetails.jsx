@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { getOrderById, cancelOrder, reset, updatePaymentStatus } from '../store/slices/orderSlice';
+import { getOrderById, cancelOrder, reset, updatePaymentStatus, updateOrderStatus } from '../store/slices/orderSlice';
 import toast from 'react-hot-toast';
 
 const OrderDetails = () => {
@@ -20,6 +20,14 @@ const OrderDetails = () => {
         paymentStatus: ''
     });
 
+    // Status Edit State
+    const [isEditStatusOpen, setIsEditStatusOpen] = React.useState(false);
+    const [statusData, setStatusData] = React.useState({
+        status: '',
+        trackingNumber: '',
+        comment: ''
+    });
+
     useEffect(() => {
         dispatch(getOrderById(id));
         return () => { dispatch(reset()); };
@@ -32,6 +40,11 @@ const OrderDetails = () => {
                 paymentMethod: order.paymentMethod || 'COD',
                 paymentId: order.paymentInfo?.id || '',
                 paymentStatus: order.paymentInfo?.status || ''
+            });
+            setStatusData({
+                status: order.orderStatus,
+                trackingNumber: order.trackingNumber || '',
+                comment: ''
             });
         }
     }, [order]);
@@ -68,6 +81,17 @@ const OrderDetails = () => {
                 dispatch(getOrderById(id));
             })
             .catch((err) => toast.error(err || 'Failed to update payment status'));
+    };
+
+    const handleUpdateStatus = () => {
+        dispatch(updateOrderStatus({ id: order._id, ...statusData }))
+            .unwrap()
+            .then(() => {
+                toast.success('Order status updated');
+                setIsEditStatusOpen(false);
+                dispatch(getOrderById(id));
+            })
+            .catch((err) => toast.error(err || 'Failed to update order status'));
     };
 
     if (isLoading) return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-600"></div></div>;
@@ -148,6 +172,61 @@ const OrderDetails = () => {
                                 className="w-full bg-green-600 text-white font-bold py-3 rounded-xl hover:bg-green-700 transition-colors shadow-lg shadow-green-200 mt-2"
                             >
                                 Update Payment
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Edit Status Modal */}
+            {isEditStatusOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+                    <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl animate-fade-in-up">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-xl font-bold text-gray-900">Update Delivery Status</h3>
+                            <button onClick={() => setIsEditStatusOpen(false)} className="text-gray-400 hover:text-gray-600">
+                                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                            </button>
+                        </div>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Order Status</label>
+                                <select
+                                    value={statusData.status}
+                                    onChange={(e) => setStatusData({ ...statusData, status: e.target.value })}
+                                    className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-green-500"
+                                >
+                                    <option value="Processing">Processing</option>
+                                    <option value="Shipped">Shipped</option>
+                                    <option value="Delivered">Delivered</option>
+                                    <option value="Cancelled">Cancelled</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Tracking Number (Optional)</label>
+                                <input
+                                    type="text"
+                                    value={statusData.trackingNumber}
+                                    onChange={(e) => setStatusData({ ...statusData, trackingNumber: e.target.value })}
+                                    className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-green-500"
+                                    placeholder="e.g. AWB123456789"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Comment (Optional)</label>
+                                <textarea
+                                    value={statusData.comment}
+                                    onChange={(e) => setStatusData({ ...statusData, comment: e.target.value })}
+                                    className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-green-500"
+                                    placeholder="Add a note about this update..."
+                                    rows="3"
+                                />
+                            </div>
+                            <button
+                                onClick={handleUpdateStatus}
+                                className="w-full bg-green-600 text-white font-bold py-3 rounded-xl hover:bg-green-700 transition-colors shadow-lg shadow-green-200 mt-2"
+                            >
+                                Update Status
                             </button>
                         </div>
                     </div>
@@ -256,6 +335,43 @@ const OrderDetails = () => {
                                     <p>{order.shippingAddress?.street}</p>
                                     <p>{order.shippingAddress?.city}, {order.shippingAddress?.state} - {order.shippingAddress?.pincode}</p>
                                     <p className="mt-2 text-gray-500">Phone: <span className="text-gray-900">{order.shippingAddress?.phone}</span></p>
+                                </div>
+                            </div>
+
+                            <div>
+                                <div className="flex justify-between items-center border-b border-gray-100 pb-2 mb-4">
+                                    <h3 className="text-lg font-bold text-gray-900">Delivery Status</h3>
+                                    {isAdminOrAgent && (
+                                        <button
+                                            onClick={() => setIsEditStatusOpen(true)}
+                                            className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold px-2 py-1 rounded transition-colors"
+                                        >
+                                            EDIT
+                                        </button>
+                                    )}
+                                </div>
+                                <div className="space-y-3">
+                                    <div className="flex justify-between items-center text-sm">
+                                        <span className="text-gray-600">Current Status</span>
+                                        <span className={`px-3 py-1 rounded font-bold uppercase text-xs ${order.orderStatus === 'Delivered' ? 'bg-green-100 text-green-700' :
+                                                order.orderStatus === 'Cancelled' ? 'bg-red-100 text-red-700' :
+                                                    'bg-blue-100 text-blue-700'
+                                            }`}>
+                                            {order.orderStatus}
+                                        </span>
+                                    </div>
+                                    {order.trackingNumber && (
+                                        <div className="flex justify-between items-center text-sm">
+                                            <span className="text-gray-600">Tracking #</span>
+                                            <span className="font-mono text-gray-900">{order.trackingNumber}</span>
+                                        </div>
+                                    )}
+                                    {order.isDelivered && order.deliveredAt && (
+                                        <div className="flex justify-between items-center text-sm">
+                                            <span className="text-gray-600">Delivered At</span>
+                                            <span className="text-gray-900">{new Date(order.deliveredAt).toLocaleString()}</span>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
