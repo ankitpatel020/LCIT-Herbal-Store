@@ -76,7 +76,7 @@ const Checkout = () => {
     const handleOnlinePayment = async (orderData) => {
         try {
             console.log("Initiating online payment...");
-            const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+            const API_URL = process.env.REACT_APP_API_URL || '/api';
 
             console.log("Fetching Razorpay key...");
             const { data: { key } } = await axios.get(`${API_URL}/payment/getkey`, { headers: { Authorization: `Bearer ${token}` } });

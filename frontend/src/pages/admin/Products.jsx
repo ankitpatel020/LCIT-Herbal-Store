@@ -10,8 +10,8 @@ import {
 import toast from 'react-hot-toast';
 import axios from 'axios';
 
-// Use frontend env override when available
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+// Use frontend env override when available, or default to relative /api for production proxy
+const API_URL = process.env.REACT_APP_API_URL || '/api';
 
 const initialFormState = {
     id: '',
