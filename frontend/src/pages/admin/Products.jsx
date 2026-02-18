@@ -241,7 +241,17 @@ const Products = () => {
                                                 {product._id.slice(-6)}
                                             </td>
                                             <td className="p-4 font-medium">{product.name}</td>
-                                            <td className="p-4">₹{product.price}</td>
+                                            <td className="p-4">
+                                                {product.originalPrice > product.price ? (
+                                                    <div className="flex flex-col">
+                                                        <span className="text-xs text-gray-400 line-through">₹{product.originalPrice}</span>
+                                                        <span className="font-bold text-green-600">₹{product.price}</span>
+                                                        <span className="text-[10px] text-green-700 font-bold">{Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF</span>
+                                                    </div>
+                                                ) : (
+                                                    <span className="font-bold">₹{product.price}</span>
+                                                )}
+                                            </td>
                                             <td className="p-4">
                                                 <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-medium">{product.studentDiscount ?? 25}%</span>
                                             </td>
