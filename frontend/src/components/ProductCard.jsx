@@ -85,21 +85,16 @@ const ProductCard = ({ product }) => {
                     alt={product.name}
                     className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
+                <div className="absolute bottom-2 left-2 bg-white/90 backdrop-blur-sm px-2 py-0.5 rounded text-[10px] font-bold text-gray-800 flex items-center gap-0.5 shadow-sm">
+                    {product.ratings?.average || 0}
+                    <svg className="w-2.5 h-2.5 text-green-600 fill-current" viewBox="0 0 24 24"><path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
+                </div>
             </Link>
 
             {/* Content */}
             <div className="p-4 flex flex-col flex-grow">
                 <div className="mb-2">
-                    <div className="flex items-center gap-1 mb-1">
-                        <div className="flex text-yellow-400 text-xs">
-                            {[...Array(5)].map((_, i) => (
-                                <svg key={i} className={`w-3 h-3 ${i < (product.ratings?.average || 0) ? 'fill-current' : 'text-gray-200'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={i < (product.ratings?.average || 0) ? 0 : 2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                                </svg>
-                            ))}
-                        </div>
-                        <span className="text-xs text-gray-500 font-medium">({product.ratings?.count || 0})</span>
-                    </div>
+                    {/* Rating removed from here */}
                     <Link to={`/product/${product._id}`} className="block">
                         <h3 className="font-bold text-gray-900 group-hover:text-green-600 transition-colors line-clamp-1 text-base" title={product.name}>
                             {product.name}
@@ -109,17 +104,18 @@ const ProductCard = ({ product }) => {
 
                 <div className="mt-auto flex items-end justify-between gap-2">
                     <div className="flex flex-col">
-                        <span className="text-xl font-bold text-gray-900">₹{finalPrice.toFixed(0)}</span>
-                        {totalDiscountPercent > 0 && (
-                            <div className="flex items-center gap-2 mt-1">
+                        <div className="flex items-center gap-2">
+                            {product.price > finalPrice && (
                                 <span className="text-gray-400 line-through text-xs font-medium">
-                                    ₹{referencePrice.toLocaleString('en-IN')}
+                                    ₹{product.price.toLocaleString('en-IN')}
                                 </span>
-                                <span className="flex items-center text-green-600 font-bold text-xs leading-none">
-                                    <svg className="w-3 h-3 mr-0.5 fill-current" viewBox="0 0 24 24"><path d="M11 4V17.1716L7.41421 13.5858L6 15L12 21L18 15L16.5858 13.5858L13 17.1716V4H11Z" /></svg>
-                                    {totalDiscountPercent}% off
-                                </span>
-                            </div>
+                            )}
+                            <span className="text-sm font-bold text-gray-900">₹{product.price > finalPrice ? product.price.toLocaleString('en-IN') : finalPrice.toLocaleString('en-IN')}</span>
+                        </div>
+                        {finalPrice < product.price && (
+                            <span className="text-blue-600 text-xs font-bold">
+                                Buy at ₹{finalPrice.toFixed(0)}
+                            </span>
                         )}
                     </div>
 
