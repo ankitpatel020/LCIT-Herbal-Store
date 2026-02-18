@@ -89,7 +89,12 @@ const Cart = () => {
                                         <Link to={`/product/${item._id}`} className="text-lg font-bold text-gray-900 hover:text-green-600 transition-colors">
                                             {item.name}
                                         </Link>
-                                        <span className="text-lg font-bold text-green-700 mt-2 sm:mt-0">₹{item.price}</span>
+                                        <div className="flex flex-col sm:items-end mt-2 sm:mt-0">
+                                            {(item.originalPrice > item.price) && (
+                                                <span className="text-sm text-gray-400 line-through">₹{item.originalPrice}</span>
+                                            )}
+                                            <span className="text-lg font-bold text-green-700">₹{item.price}</span>
+                                        </div>
                                     </div>
                                     <p className="text-sm text-gray-500 mb-4">{item.category}</p>
 

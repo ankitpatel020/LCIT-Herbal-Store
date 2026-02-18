@@ -49,7 +49,7 @@ const ProductCard = ({ product }) => {
     const handleAddToCart = (e) => {
         e.preventDefault();
         if (!inStock) return toast.error('Out of stock');
-        dispatch(addToCart({ ...product, price: finalPrice, quantity: 1 }));
+        dispatch(addToCart({ ...product, price: finalPrice, quantity: 1, originalPrice: referencePrice, regularPrice: product.price }));
         toast.success('Added to cart');
     };
 
@@ -105,16 +105,16 @@ const ProductCard = ({ product }) => {
                 <div className="mt-auto flex items-end justify-between gap-2">
                     <div className="flex flex-col">
                         <div className="flex items-center gap-2">
-                            {product.price > finalPrice && (
+                            {referencePrice > product.price && (
                                 <span className="text-gray-400 line-through text-xs font-medium">
-                                    ₹{product.price.toLocaleString('en-IN')}
+                                    ₹{referencePrice.toLocaleString('en-IN')}
                                 </span>
                             )}
-                            <span className="text-sm font-bold text-gray-900">₹{product.price > finalPrice ? product.price.toLocaleString('en-IN') : finalPrice.toLocaleString('en-IN')}</span>
+                            <span className="text-sm font-bold text-gray-900">₹{product.price.toLocaleString('en-IN')}</span>
                         </div>
                         {finalPrice < product.price && (
                             <span className="text-blue-600 text-xs font-bold">
-                                Buy at ₹{finalPrice.toFixed(0)}
+                                Buy at ₹{finalPrice.toLocaleString('en-IN')}
                             </span>
                         )}
                     </div>

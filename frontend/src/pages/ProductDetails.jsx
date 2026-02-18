@@ -92,7 +92,7 @@ const ProductDetails = () => {
 
     const handleAddToCart = () => {
         if (product?.stock > 0) {
-            dispatch(addToCart({ ...product, price: finalPrice, quantity: Number(qty) }));
+            dispatch(addToCart({ ...product, price: finalPrice, quantity: Number(qty), originalPrice: referencePrice, regularPrice: product.price }));
             toast.success('Added to Cart');
         } else {
             toast.error('Out of Stock');

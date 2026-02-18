@@ -264,7 +264,12 @@ const Checkout = () => {
                                             <p className="font-medium text-gray-900 line-clamp-1">{item.name}</p>
                                             <p className="text-gray-500">Qty: {item.quantity}</p>
                                         </div>
-                                        <p className="font-bold text-gray-900">₹{(item.price * item.quantity).toFixed(2)}</p>
+                                        <div className="text-right">
+                                            {(item.originalPrice > item.price) && (
+                                                <p className="text-xs text-gray-400 line-through">₹{(item.originalPrice * item.quantity).toFixed(2)}</p>
+                                            )}
+                                            <p className="font-bold text-gray-900">₹{(item.price * item.quantity).toFixed(2)}</p>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
