@@ -1,10 +1,15 @@
 // Global error handler middleware
 export const errorHandler = (err, req, res, next) => {
     let error = { ...err };
+    error.statusCode = err.statusCode;
     error.message = err.message;
 
     // Log error for debugging
-    console.error('Error:', err);
+    console.error('------- BACKEND ERROR -------');
+    console.error(err);
+    console.error('Message:', err.message);
+    console.error('Stack:', err.stack);
+    console.error('-----------------------------');
 
     // Mongoose bad ObjectId
     if (err.name === 'CastError') {
