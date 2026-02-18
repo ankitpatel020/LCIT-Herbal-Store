@@ -66,7 +66,7 @@ const Reviews = () => {
                                                 <div className="flex items-center">
                                                     <div className="h-10 w-10 flex-shrink-0 mr-3">
                                                         <img
-                                                            src={review.product?.images?.[0] || 'https://via.placeholder.com/50'}
+                                                            src={review.product?.images?.[0] || 'https://placehold.co/50'}
                                                             alt={review.product?.name}
                                                             className="h-full w-full object-cover rounded"
                                                         />

@@ -75,13 +75,19 @@ const Checkout = () => {
 
     const handleOnlinePayment = async (orderData) => {
         try {
+            console.log("Initiating online payment...");
             const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+
+            console.log("Fetching Razorpay key...");
             const { data: { key } } = await axios.get(`${API_URL}/payment/getkey`, { headers: { Authorization: `Bearer ${token}` } });
+            console.log("Razorpay key fetched:", key);
 
             // Note: Use finalTotal for payment if applicable, but backend usually calculates it.
             // Using orderData.totalPrice calculated on frontend to initiate
 
+            console.log("Creating Razorpay order...");
             const { data: { order } } = await axios.post(`${API_URL}/payment/checkout`, { amount: orderData.totalPrice }, { headers: { Authorization: `Bearer ${token}` } });
+            console.log("Razorpay order created:", order);
 
             const options = {
                 key,
@@ -92,6 +98,7 @@ const Checkout = () => {
                 order_id: order.id,
                 handler: async function (response) {
                     try {
+                        console.log("Payment handler triggered:", response);
                         const verifyData = {
                             razorpay_order_id: response.razorpay_order_id,
                             razorpay_payment_id: response.razorpay_payment_id,
@@ -107,7 +114,8 @@ const Checkout = () => {
                         } else {
                             toast.error('Payment Verification Failed');
                         }
-                    } catch {
+                    } catch (error) {
+                        console.error("Payment Verification Error:", error);
                         toast.error('Payment Verification Error');
                         navigate(`/order/${orderData._id}`);
                     }
@@ -115,11 +123,21 @@ const Checkout = () => {
                 prefill: { name: user.name, email: user.email, contact: shippingAddress.phone },
                 theme: { color: "#16a34a" }
             };
+
+            if (!window.Razorpay) {
+                throw new Error("Razorpay SDK not loaded");
+            }
+
             const razor = new window.Razorpay(options);
             razor.open();
         } catch (error) {
-            toast.error('Online payment initialization failed.');
-            navigate(`/order/${orderData._id}`);
+            console.error("Online payment initialization failed:", error);
+            if (error.response) {
+                console.error("Error response:", error.response.data);
+                console.error("Error status:", error.response.status);
+            }
+            toast.error(`Online payment initialization failed: ${error.message}`);
+            // navigate(`/order/${orderData._id}`); // Commented out to allow retry or better debugging
         }
     };
 

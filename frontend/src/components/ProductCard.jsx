@@ -11,7 +11,7 @@ const ProductCard = ({ product }) => {
     if (!product) return null;
 
     const inStock = product.stock > 0;
-    const imageUrl = product.images?.[0]?.url || product.images?.[0] || 'https://via.placeholder.com/300?text=LCIT+Herbal';
+    const imageUrl = product.images?.[0]?.url || product.images?.[0] || 'https://placehold.co/300?text=LCIT+Herbal';
 
     // Calculate effective price based on user verification status
     const getEffectivePrice = () => {
