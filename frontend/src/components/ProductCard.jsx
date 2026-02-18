@@ -113,6 +113,11 @@ const ProductCard = ({ product }) => {
                             <span className="text-xl font-bold text-green-600">
                                 ₹{finalPrice.toLocaleString('en-IN')}
                             </span>
+                            {totalDiscountPercent > 0 && (
+                                <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full">
+                                    {totalDiscountPercent}% OFF
+                                </span>
+                            )}
                         </div>
                     </div>
 
