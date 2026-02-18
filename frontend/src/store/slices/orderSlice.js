@@ -137,6 +137,7 @@ export const getAllOrders = createAsyncThunk(
 );
 
 // Update order status (Admin/Agent)
+// Update order status (Admin/Agent)
 export const updateOrderStatus = createAsyncThunk(
     'orders/updateStatus',
     async ({ id, status }, thunkAPI) => {
@@ -155,6 +156,30 @@ export const updateOrderStatus = createAsyncThunk(
         } catch (error) {
             const message =
                 error.response?.data?.message || error.message || 'Failed to update order status';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
+// Update payment status (Admin/Agent)
+export const updatePaymentStatus = createAsyncThunk(
+    'orders/updatePaymentStatus',
+    async ({ id, paymentData }, thunkAPI) => {
+        try {
+            const token = thunkAPI.getState().auth.token;
+            const response = await axios.put(
+                `${API_URL}/orders/${id}/payment-status`,
+                paymentData,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+            return response.data;
+        } catch (error) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to update payment status';
             return thunkAPI.rejectWithValue(message);
         }
     }
@@ -297,6 +322,21 @@ const orderSlice = createSlice({
                 state.message = 'Order status updated successfully';
             })
             .addCase(updateOrderStatus.rejected, (state, action) => {
+                state.isLoading = false;
+                state.isError = true;
+                state.message = action.payload;
+            })
+            // Update payment status
+            .addCase(updatePaymentStatus.pending, (state) => {
+                state.isLoading = true;
+            })
+            .addCase(updatePaymentStatus.fulfilled, (state, action) => {
+                state.isLoading = false;
+                state.isSuccess = true;
+                state.order = action.payload.data;
+                state.message = 'Payment status updated successfully';
+            })
+            .addCase(updatePaymentStatus.rejected, (state, action) => {
                 state.isLoading = false;
                 state.isError = true;
                 state.message = action.payload;

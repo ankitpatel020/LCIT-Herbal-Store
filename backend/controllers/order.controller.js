@@ -399,3 +399,48 @@ export const deleteOrder = asyncHandler(async (req, res) => {
         message: 'Order deleted successfully',
     });
 });
+
+// @desc    Update order payment status (Admin/Agent)
+// @route   PUT /api/orders/:id/payment-status
+// @access  Private/Admin/Agent
+export const updatePaymentStatus = asyncHandler(async (req, res) => {
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+        return res.status(404).json({
+            success: false,
+            message: 'Order not found',
+        });
+    }
+
+    const { isPaid, paymentMethod, paymentId, paymentStatus } = req.body;
+
+    if (typeof isPaid !== 'undefined') {
+        order.isPaid = isPaid;
+        if (isPaid && !order.paidAt) {
+            order.paidAt = Date.now();
+        } else if (!isPaid) {
+            order.paidAt = undefined;
+        }
+    }
+
+    if (paymentMethod) {
+        order.paymentMethod = paymentMethod;
+    }
+
+    if (paymentId || paymentStatus) {
+        order.paymentInfo = {
+            id: paymentId || order.paymentInfo?.id,
+            status: paymentStatus || order.paymentInfo?.status,
+            paidAt: order.isPaid ? (order.paymentInfo?.paidAt || Date.now()) : undefined
+        };
+    }
+
+    const updatedOrder = await order.save();
+
+    res.status(200).json({
+        success: true,
+        message: 'Order payment status updated successfully',
+        data: updatedOrder,
+    });
+});

@@ -17,10 +17,11 @@ const initialFormState = {
     id: '',
     name: '',
     price: '',
-    image: null,
+    images: [],
     category: 'Herbal Soaps',
     stock: 0,
     description: '',
+    originalPrice: '',
     studentDiscount: 25,
     facultyDiscount: 50,
 };
@@ -49,7 +50,7 @@ const Products = () => {
         'Other',
     ], []);
 
-    const { name, price, image, category, stock, description, studentDiscount, facultyDiscount } = formData;
+    const { name, price, originalPrice, images, category, stock, description, studentDiscount, facultyDiscount } = formData;
 
     // 🔹 Fetch products
     useEffect(() => {
@@ -74,28 +75,26 @@ const Products = () => {
         if (product) {
             setIsEditMode(true);
 
-            // normalize image to object
-            let imageState = null;
+            // normalize images
+            let imageList = [];
             if (product.images && product.images.length > 0) {
-                const firstImage = product.images[0];
-                if (typeof firstImage === 'string') {
-                    imageState = { url: firstImage };
-                } else {
-                    imageState = firstImage;
-                }
+                imageList = product.images.map(img =>
+                    typeof img === 'string' ? { url: img } : img
+                );
             } else if (product.image) {
                 // Legacy support
-                imageState = { url: product.image };
+                imageList = [{ url: product.image }];
             }
 
             setFormData({
                 id: product._id,
                 name: product.name,
                 price: product.price,
-                image: imageState,
+                images: imageList,
                 category: product.category || 'Herbal Soaps',
                 stock: product.stock,
                 description: product.description,
+                originalPrice: product.originalPrice || '',
                 studentDiscount: product.studentDiscount ?? 25,
                 facultyDiscount: product.facultyDiscount ?? 50,
             });
@@ -121,18 +120,20 @@ const Products = () => {
 
     // 🔹 Image Upload
     const uploadFileHandler = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
+        const files = Array.from(e.target.files);
+        if (files.length === 0) return;
 
-        // File size check (5MB limit)
-        if (file.size > 5 * 1024 * 1024) {
-            toast.error('File size too large. Max 5MB allowed.');
+        // File size check (5MB limit per file)
+        const invalidFile = files.find(file => file.size > 5 * 1024 * 1024);
+        if (invalidFile) {
+            toast.error(`File ${invalidFile.name} is too large. Max 5MB allowed.`);
             return;
         }
 
         const data = new FormData();
-        data.append('image', file);
-        // data.append('folder', 'lcit-herbal-store/products'); // accurate folder
+        files.forEach(file => {
+            data.append('images', file);
+        });
 
         setUploading(true);
 
@@ -145,37 +146,33 @@ const Products = () => {
             };
 
             console.log('Initiating upload...');
-            const res = await axios.post(`${API_URL}/upload/image`, data, config);
+            // Changed endpoint to support multiple images
+            const res = await axios.post(`${API_URL}/upload/images`, data, config);
             console.log('Upload success:', res.data);
 
             setFormData((prev) => ({
                 ...prev,
-                // Store full image object from response
-                image: {
-                    url: res.data.data.url,
-                    public_id: res.data.data.public_id
-                },
+                // Append new images to existing list
+                images: [...prev.images, ...res.data.data],
             }));
 
-            toast.success('Image uploaded successfully');
+            toast.success(`${files.length} image(s) uploaded successfully`);
         } catch (err) {
             console.error('Upload Error Details:', err);
-            if (err.response) {
-                console.error('Error Response Data:', err.response.data);
-                console.error('Error Status:', err.response.status);
-            } else if (err.request) {
-                console.error('No response received:', err.request);
-            } else {
-                console.error('Error Message:', err.message);
-            }
-
             const errorMessage = err.response?.data?.message || err.message || 'Upload failed';
             toast.error(`Upload failed: ${errorMessage}`);
         } finally {
             setUploading(false);
-            // Reset file input value so same file can be selected again if needed
+            // Reset file input value
             e.target.value = '';
         }
+    };
+
+    const removeImage = (indexToRemove) => {
+        setFormData((prev) => ({
+            ...prev,
+            images: prev.images.filter((_, index) => index !== indexToRemove),
+        }));
     };
 
     // 🔹 Submit
@@ -187,11 +184,13 @@ const Products = () => {
             price: Number(price),
             description,
             category,
+            category,
             stock: Number(stock),
+            originalPrice: Number(originalPrice),
             studentDiscount: Number(studentDiscount),
             facultyDiscount: Number(facultyDiscount),
             // Send array of image objects
-            images: image ? [image] : [],
+            images: images,
         };
 
         if (isEditMode) {
@@ -303,30 +302,58 @@ const Products = () => {
                                         <input type="number" name="stock" value={stock} onChange={onChange} className="input" placeholder="Stock" required />
                                     </div>
 
-                                    <div className="space-y-2">
-                                        <input type="hidden" name="image" value={image?.url || image || ''} required />
 
+                                    <div className="space-y-4">
                                         <div className="flex items-center gap-2">
-                                            <input type="file" onChange={uploadFileHandler} className="text-sm" accept="image/*" />
-                                            {uploading && <span className="text-sm text-blue-500">Uploading...</span>}
+                                            <label className="btn btn-sm bg-gray-200 cursor-pointer">
+                                                Choose Files
+                                                <input type="file" multiple onChange={uploadFileHandler} className="hidden" accept="image/*" />
+                                            </label>
+                                            <span className="text-xs text-gray-500">Max 5MB each</span>
+                                            {uploading && <span className="text-sm text-blue-500 animate-pulse">Uploading...</span>}
                                         </div>
 
-                                        {image && (
-                                            <div className="relative inline-block">
-                                                <img
-                                                    src={image?.url || image}
-                                                    alt="Preview"
-                                                    className="h-24 w-24 object-cover rounded-md border border-gray-200"
-                                                    onError={(e) => { e.target.style.display = 'none'; }}
-                                                />
+                                        {images && images.length > 0 && (
+                                            <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
+                                                {images.map((img, index) => (
+                                                    <div key={index} className="relative group">
+                                                        <img
+                                                            src={img?.url || img}
+                                                            alt={`Preview ${index}`}
+                                                            className="h-24 w-full object-cover rounded-md border border-gray-200"
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => removeImage(index)}
+                                                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+                                                            title="Remove Image"
+                                                        >
+                                                            ✕
+                                                        </button>
+                                                    </div>
+                                                ))}
                                             </div>
                                         )}
                                     </div>
 
                                     <textarea name="description" value={description} onChange={onChange} rows="4" className="input" placeholder="Description" required />
 
-                                    {/* Discount Fields */}
+                                    {/* Price & Discounts */}
                                     <div className="grid md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-700 mb-1">MRP (Original Price)</label>
+                                            <input
+                                                type="number"
+                                                name="originalPrice"
+                                                value={originalPrice}
+                                                onChange={onChange}
+                                                className="input"
+                                                placeholder="e.g. 1999"
+                                                min="0"
+                                            />
+                                            <p className="text-xs text-gray-500 mt-1">Set higher than Price to show discount</p>
+                                        </div>
+
                                         <div>
                                             <label className="block text-sm font-semibold text-green-700 mb-1">🎓 Student Discount (%)</label>
                                             <input
@@ -365,8 +392,8 @@ const Products = () => {
                             </div>
                         </div>
                     )}
-                </div>
-            </div>
+                </div >
+            </div >
         </>
     );
 };

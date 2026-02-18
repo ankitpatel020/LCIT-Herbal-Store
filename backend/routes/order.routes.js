@@ -6,6 +6,7 @@ import {
     updateOrderToPaid,
     getAllOrders,
     updateOrderStatus,
+    updatePaymentStatus,
     cancelOrder,
     deleteOrder,
     getInvoice
@@ -25,6 +26,7 @@ router.put('/:id/cancel', protect, cancelOrder);
 // Admin/Agent routes
 router.get('/', protect, authorize('admin', 'agent'), getAllOrders);
 router.put('/:id/status', protect, authorize('admin', 'agent'), updateOrderStatus);
+router.put('/:id/payment-status', protect, authorize('admin', 'agent'), updatePaymentStatus);
 router.delete('/:id', protect, authorize('admin'), deleteOrder);
 
 export default router;

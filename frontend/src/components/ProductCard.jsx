@@ -14,25 +14,42 @@ const ProductCard = ({ product }) => {
     const imageUrl = product.images?.[0]?.url || product.images?.[0] || 'https://placehold.co/300?text=LCIT+Herbal';
 
     // Calculate effective price based on user verification status
-    const getEffectivePrice = () => {
+    const getPricing = () => {
         const basePrice = product.price;
+        const mrp = product.originalPrice || basePrice; // Fallback to basePrice if no MRP
+
+        let finalPrice = basePrice;
+        let discountSource = null;
+
         if (user?.isLCITFaculty) {
             const disc = product.facultyDiscount ?? 50;
-            return { price: basePrice - (basePrice * disc / 100), discount: disc, type: 'Faculty' };
-        }
-        if (user?.isLCITStudent) {
+            finalPrice = basePrice - (basePrice * disc / 100);
+            discountSource = 'Faculty';
+        } else if (user?.isLCITStudent) {
             const disc = product.studentDiscount ?? 25;
-            return { price: basePrice - (basePrice * disc / 100), discount: disc, type: 'Student' };
+            finalPrice = basePrice - (basePrice * disc / 100);
+            discountSource = 'Student';
         }
-        return { price: basePrice, discount: 0, type: null };
+
+        // Ensure final price doesn't exceed MRP (sanity check)
+        // If MRP is manually set lower than basePrice (error), trust basePrice logic but visually we might have issues.
+        // Assuming MRP >= basePrice >= finalPrice
+
+        const referencePrice = mrp > basePrice ? mrp : (discountSource ? basePrice : mrp);
+
+        // Calculate total percentage off from Reference Price
+        const totalDiscountAmount = referencePrice - finalPrice;
+        const totalDiscountPercent = referencePrice > 0 ? Math.round((totalDiscountAmount / referencePrice) * 100) : 0;
+
+        return { finalPrice, referencePrice, totalDiscountPercent, discountSource };
     };
 
-    const effective = getEffectivePrice();
+    const { finalPrice, referencePrice, totalDiscountPercent, discountSource } = getPricing();
 
     const handleAddToCart = (e) => {
         e.preventDefault();
         if (!inStock) return toast.error('Out of stock');
-        dispatch(addToCart({ ...product, price: effective.price, quantity: 1 }));
+        dispatch(addToCart({ ...product, price: finalPrice, quantity: 1 }));
         toast.success('Added to cart');
     };
 
@@ -41,14 +58,14 @@ const ProductCard = ({ product }) => {
 
             {/* Badges */}
             <div className="absolute top-3 left-3 z-10 flex flex-col gap-2">
-                {product.category && (
-                    <span className="bg-white/90 backdrop-blur text-xs font-bold px-3 py-1 rounded-full shadow-sm text-gray-700">
-                        {product.category}
+                {totalDiscountPercent > 0 && (
+                    <span className="bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-md shadow-sm">
+                        Hot Deal
                     </span>
                 )}
-                {effective.type && (
-                    <span className={`text-xs font-bold px-3 py-1 rounded-full shadow-sm ${effective.type === 'Faculty' ? 'bg-blue-500 text-white' : 'bg-green-500 text-white'}`}>
-                        {effective.discount}% {effective.type} Off
+                {discountSource && (
+                    <span className={`text-xs font-bold px-3 py-1 rounded-full shadow-sm ${discountSource === 'Faculty' ? 'bg-blue-500 text-white' : 'bg-green-500 text-white'}`}>
+                        {discountSource}
                     </span>
                 )}
             </div>
@@ -71,9 +88,9 @@ const ProductCard = ({ product }) => {
             </Link>
 
             {/* Content */}
-            <div className="p-5 flex flex-col flex-grow">
-                <div className="mb-1">
-                    <div className="flex items-center gap-1 mb-2">
+            <div className="p-4 flex flex-col flex-grow">
+                <div className="mb-2">
+                    <div className="flex items-center gap-1 mb-1">
                         <div className="flex text-yellow-400 text-xs">
                             {[...Array(5)].map((_, i) => (
                                 <svg key={i} className={`w-3 h-3 ${i < (product.ratings?.average || 0) ? 'fill-current' : 'text-gray-200'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -84,27 +101,32 @@ const ProductCard = ({ product }) => {
                         <span className="text-xs text-gray-500 font-medium">({product.ratings?.count || 0})</span>
                     </div>
                     <Link to={`/product/${product._id}`} className="block">
-                        <h3 className="font-bold text-gray-900 group-hover:text-green-600 transition-colors line-clamp-1 text-lg" title={product.name}>
+                        <h3 className="font-bold text-gray-900 group-hover:text-green-600 transition-colors line-clamp-1 text-base" title={product.name}>
                             {product.name}
                         </h3>
                     </Link>
                 </div>
 
-                <div className="mt-auto pt-4 flex items-center justify-between">
-                    <div>
-                        <span className="block text-lg font-bold text-green-700">₹{effective.price.toFixed(2)}</span>
-                        {effective.type && (
-                            <span className="text-xs text-gray-400 line-through">₹{product.price}</span>
+                <div className="mt-auto flex items-end justify-between gap-2">
+                    <div className="flex flex-col">
+                        {totalDiscountPercent > 0 && (
+                            <div className="flex items-center gap-2 mb-1">
+                                <span className="flex items-center text-green-600 font-bold text-lg leading-none">
+                                    <svg className="w-4 h-4 mr-0.5 fill-current" viewBox="0 0 24 24"><path d="M11 4V17.1716L7.41421 13.5858L6 15L12 21L18 15L16.5858 13.5858L13 17.1716V4H11Z" /></svg>
+                                    {totalDiscountPercent}%
+                                </span>
+                                <span className="text-gray-400 line-through text-md font-medium">
+                                    {referencePrice.toLocaleString('en-IN')}
+                                </span>
+                            </div>
                         )}
-                        {!effective.type && product.originalPrice > product.price && (
-                            <span className="text-xs text-gray-400 line-through">₹{product.originalPrice}</span>
-                        )}
+                        <span className="text-2xl font-bold text-gray-900">₹{finalPrice.toFixed(0)}</span>
                     </div>
 
                     <button
                         onClick={handleAddToCart}
                         disabled={!inStock}
-                        className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${inStock ? 'bg-green-50 text-green-600 hover:bg-green-600 hover:text-white shadow-sm hover:shadow-md' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`}
+                        className={`w-10 h-10 rounded-full flex items-center justify-center transition-all flex-shrink-0 ${inStock ? 'bg-green-600 text-white hover:bg-green-700 shadow-md hover:shadow-lg hover:scale-105' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`}
                     >
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
                     </button>

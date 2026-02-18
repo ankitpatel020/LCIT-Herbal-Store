@@ -1,19 +1,40 @@
 import React, { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { getOrderById, cancelOrder, reset } from '../store/slices/orderSlice';
+import { getOrderById, cancelOrder, reset, updatePaymentStatus } from '../store/slices/orderSlice';
 import toast from 'react-hot-toast';
 
 const OrderDetails = () => {
     const { id } = useParams();
     const dispatch = useDispatch();
     const { order, isLoading, isError, message } = useSelector((state) => state.orders);
+    const { user } = useSelector((state) => state.auth);
     const [showSuccess, setShowSuccess] = React.useState(false);
+
+    // Payment Edit State
+    const [isEditPaymentOpen, setIsEditPaymentOpen] = React.useState(false);
+    const [editPaymentData, setEditPaymentData] = React.useState({
+        isPaid: false,
+        paymentMethod: 'COD',
+        paymentId: '',
+        paymentStatus: ''
+    });
 
     useEffect(() => {
         dispatch(getOrderById(id));
         return () => { dispatch(reset()); };
     }, [dispatch, id]);
+
+    useEffect(() => {
+        if (order) {
+            setEditPaymentData({
+                isPaid: order.isPaid || false,
+                paymentMethod: order.paymentMethod || 'COD',
+                paymentId: order.paymentInfo?.id || '',
+                paymentStatus: order.paymentInfo?.status || ''
+            });
+        }
+    }, [order]);
 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
@@ -38,6 +59,17 @@ const OrderDetails = () => {
         }
     };
 
+    const handleUpdatePayment = () => {
+        dispatch(updatePaymentStatus({ id: order._id, paymentData: editPaymentData }))
+            .unwrap()
+            .then(() => {
+                toast.success('Payment status updated');
+                setIsEditPaymentOpen(false);
+                dispatch(getOrderById(id));
+            })
+            .catch((err) => toast.error(err || 'Failed to update payment status'));
+    };
+
     if (isLoading) return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-600"></div></div>;
 
     if (isError) return (
@@ -52,9 +84,76 @@ const OrderDetails = () => {
     const steps = ['Processing', 'Shipped', 'Delivered'];
     const currentStep = steps.indexOf(order.orderStatus) !== -1 ? steps.indexOf(order.orderStatus) : 0;
     const isCancelled = order.orderStatus === 'Cancelled';
+    const isAdminOrAgent = user && (user.role === 'admin' || user.role === 'agent');
 
     return (
-        <div className="bg-gray-50 min-h-screen py-12">
+        <div className="bg-gray-50 min-h-screen py-12 relative">
+            {/* Edit Payment Modal */}
+            {isEditPaymentOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+                    <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl animate-fade-in-up">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-xl font-bold text-gray-900">Edit Payment Details</h3>
+                            <button onClick={() => setIsEditPaymentOpen(false)} className="text-gray-400 hover:text-gray-600">
+                                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                            </button>
+                        </div>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Payment Status</label>
+                                <select
+                                    value={editPaymentData.isPaid.toString()}
+                                    onChange={(e) => setEditPaymentData({ ...editPaymentData, isPaid: e.target.value === 'true' })}
+                                    className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-green-500"
+                                >
+                                    <option value="false">Pending (Unpaid)</option>
+                                    <option value="true">Paid</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
+                                <select
+                                    value={editPaymentData.paymentMethod}
+                                    onChange={(e) => setEditPaymentData({ ...editPaymentData, paymentMethod: e.target.value })}
+                                    className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-green-500"
+                                >
+                                    <option value="COD">Cash on Delivery</option>
+                                    <option value="Razorpay">Razorpay / Online</option>
+                                    <option value="Card">Card</option>
+                                    <option value="UPI">UPI</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Transaction ID (Optional)</label>
+                                <input
+                                    type="text"
+                                    value={editPaymentData.paymentId}
+                                    onChange={(e) => setEditPaymentData({ ...editPaymentData, paymentId: e.target.value })}
+                                    className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-green-500"
+                                    placeholder="e.g. pay_L8..."
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Gateway Status (Optional)</label>
+                                <input
+                                    type="text"
+                                    value={editPaymentData.paymentStatus}
+                                    onChange={(e) => setEditPaymentData({ ...editPaymentData, paymentStatus: e.target.value })}
+                                    className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-green-500"
+                                    placeholder="e.g. captured"
+                                />
+                            </div>
+                            <button
+                                onClick={handleUpdatePayment}
+                                className="w-full bg-green-600 text-white font-bold py-3 rounded-xl hover:bg-green-700 transition-colors shadow-lg shadow-green-200 mt-2"
+                            >
+                                Update Payment
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div className="container-custom max-w-4xl">
 
                 {/* Success Message */}
@@ -161,7 +260,17 @@ const OrderDetails = () => {
                             </div>
 
                             <div>
-                                <h3 className="text-lg font-bold text-gray-900 border-b border-gray-100 pb-2 mb-4">Payment Info</h3>
+                                <div className="flex justify-between items-center border-b border-gray-100 pb-2 mb-4">
+                                    <h3 className="text-lg font-bold text-gray-900">Payment Info</h3>
+                                    {isAdminOrAgent && (
+                                        <button
+                                            onClick={() => setIsEditPaymentOpen(true)}
+                                            className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold px-2 py-1 rounded transition-colors"
+                                        >
+                                            EDIT
+                                        </button>
+                                    )}
+                                </div>
                                 <div className="flex justify-between items-center text-sm">
                                     <span className="text-gray-600">Method</span>
                                     <span className="font-bold text-gray-900 bg-gray-100 px-3 py-1 rounded">{order.paymentMethod}</span>
@@ -174,6 +283,12 @@ const OrderDetails = () => {
                                         <span className="text-orange-700 bg-orange-100 px-3 py-1 rounded font-bold">PENDING</span>
                                     )}
                                 </div>
+                                {(order.isPaid && order.paymentInfo) && (
+                                    <div className="mt-3 text-xs text-gray-500 space-y-1">
+                                        {order.paymentInfo.id && <p>TxID: {order.paymentInfo.id}</p>}
+                                        {order.paymentInfo.paidAt && <p>Paid: {new Date(order.paymentInfo.paidAt).toLocaleString()}</p>}
+                                    </div>
+                                )}
                             </div>
 
                             <div className="bg-gray-50 p-6 rounded-2xl">
@@ -186,9 +301,15 @@ const OrderDetails = () => {
                                         <span>Shipping</span>
                                         <span className="text-green-600">Free</span>
                                     </div>
+                                    {order.discountAmount > 0 && (
+                                        <div className="flex justify-between text-green-600">
+                                            <span>Discount</span>
+                                            <span>-₹{order.discountAmount.toFixed(2)}</span>
+                                        </div>
+                                    )}
                                     <div className="flex justify-between">
                                         <span>Tax</span>
-                                        <span>₹0.00</span>
+                                        <span>₹{order.taxPrice || 0}</span>
                                     </div>
                                     <div className="border-t border-gray-200 my-2 pt-2 flex justify-between font-bold text-lg text-gray-900">
                                         <span>Total</span>
@@ -203,5 +324,6 @@ const OrderDetails = () => {
         </div>
     );
 };
+
 
 export default OrderDetails;

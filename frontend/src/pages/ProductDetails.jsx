@@ -60,25 +60,37 @@ const ProductDetails = () => {
     };
 
     // Calculate effective price based on user verification status
-    const getEffectivePrice = () => {
-        if (!product) return { price: 0, discount: 0, type: null };
+    const getPricing = () => {
+        if (!product) return { finalPrice: 0, referencePrice: 0, totalDiscountPercent: 0, discountSource: null };
+
         const basePrice = product.price;
+        const mrp = product.originalPrice || basePrice;
+
+        let finalPrice = basePrice;
+        let discountSource = null;
+
         if (user?.isLCITFaculty) {
             const disc = product.facultyDiscount ?? 50;
-            return { price: basePrice - (basePrice * disc / 100), discount: disc, type: 'Faculty' };
-        }
-        if (user?.isLCITStudent) {
+            finalPrice = basePrice - (basePrice * disc / 100);
+            discountSource = 'Faculty';
+        } else if (user?.isLCITStudent) {
             const disc = product.studentDiscount ?? 25;
-            return { price: basePrice - (basePrice * disc / 100), discount: disc, type: 'Student' };
+            finalPrice = basePrice - (basePrice * disc / 100);
+            discountSource = 'Student';
         }
-        return { price: basePrice, discount: 0, type: null };
+
+        const referencePrice = mrp > basePrice ? mrp : (discountSource ? basePrice : mrp);
+        const totalDiscountAmount = referencePrice - finalPrice;
+        const totalDiscountPercent = referencePrice > 0 ? Math.round((totalDiscountAmount / referencePrice) * 100) : 0;
+
+        return { finalPrice, referencePrice, totalDiscountPercent, discountSource };
     };
 
-    const effective = getEffectivePrice();
+    const { finalPrice, referencePrice, totalDiscountPercent, discountSource } = getPricing();
 
     const handleAddToCart = () => {
         if (product?.stock > 0) {
-            dispatch(addToCart({ ...product, price: effective.price, quantity: Number(qty) }));
+            dispatch(addToCart({ ...product, price: finalPrice, quantity: Number(qty) }));
             toast.success('Added to Cart');
         } else {
             toast.error('Out of Stock');
@@ -108,6 +120,13 @@ const ProductDetails = () => {
                     <div>
                         <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden aspect-square relative mb-6">
                             <span className="absolute top-4 left-4 bg-green-100 text-green-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider z-10">Lab Certified</span>
+                            {/* Hot Deal Badge on Details Page */}
+                            {totalDiscountPercent > 0 && (
+                                <span className="absolute top-4 right-4 bg-green-600 text-white text-sm font-bold px-4 py-1.5 rounded-md shadow-sm z-10">
+                                    {totalDiscountPercent}% OFF
+                                </span>
+                            )}
+
                             {selectedImage ? (
                                 <img src={selectedImage} alt={product.name} className="w-full h-full object-cover" />
                             ) : (
@@ -143,29 +162,35 @@ const ProductDetails = () => {
                             <span className="text-gray-600">{reviewCount} Verified Reviews</span>
                         </div>
 
-                        <div className="flex items-end gap-4 mb-4">
-                            <span className="text-4xl font-bold text-green-700">₹{effective.price.toFixed(2)}</span>
-                            {effective.type && (
-                                <span className="text-xl text-gray-400 line-through mb-1">₹{product.price}</span>
+                        <div className="flex items-center gap-4 mb-6">
+                            {totalDiscountPercent > 0 && (
+                                <div className="flex items-center text-green-600 font-bold text-3xl">
+                                    <svg className="w-6 h-6 mr-1 fill-current" viewBox="0 0 24 24"><path d="M11 4V17.1716L7.41421 13.5858L6 15L12 21L18 15L16.5858 13.5858L13 17.1716V4H11Z" /></svg>
+                                    {totalDiscountPercent}%
+                                </div>
                             )}
-                            {!effective.type && product.originalPrice > product.price && (
-                                <span className="text-xl text-gray-400 line-through mb-1">₹{product.originalPrice}</span>
-                            )}
+                            <span className="text-5xl font-bold text-gray-900">₹{finalPrice.toFixed(0)}</span>
                         </div>
 
+                        {totalDiscountPercent > 0 && (
+                            <div className="mb-6 text-gray-500 font-medium text-lg">
+                                M.R.P.: <span className="line-through">₹{referencePrice.toLocaleString('en-IN')}</span>
+                                <span className="ml-2 text-sm">(Inclusive of all taxes)</span>
+                            </div>
+                        )}
+
                         {/* Discount Banner for verified users */}
-                        {effective.type && (
-                            <div className={`flex items-center gap-3 p-4 rounded-xl mb-8 border ${effective.type === 'Faculty' ? 'bg-blue-50 border-blue-200' : 'bg-green-50 border-green-200'}`}>
-                                <span className="text-2xl">{effective.type === 'Faculty' ? '👨‍🏫' : '🎓'}</span>
+                        {discountSource && (
+                            <div className={`flex items-center gap-3 p-4 rounded-xl mb-8 border ${discountSource === 'Faculty' ? 'bg-blue-50 border-blue-200' : 'bg-green-50 border-green-200'}`}>
+                                <span className="text-2xl">{discountSource === 'Faculty' ? '👨‍🏫' : '🎓'}</span>
                                 <div>
-                                    <span className={`font-bold ${effective.type === 'Faculty' ? 'text-blue-700' : 'text-green-700'}`}>
-                                        {effective.discount}% {effective.type} Discount Applied!
+                                    <span className={`font-bold ${discountSource === 'Faculty' ? 'text-blue-700' : 'text-green-700'}`}>
+                                        Extra Student/Faculty Benefit Applied!
                                     </span>
-                                    <p className="text-sm text-gray-500">Verified LCIT {effective.type} exclusive pricing</p>
+                                    <p className="text-sm text-gray-500">Verified {discountSource} pricing active.</p>
                                 </div>
                             </div>
                         )}
-                        {!effective.type && <div className="mb-8"></div>}
 
                         <div className="border-t border-b border-gray-200 py-6 mb-8">
                             <p className="text-gray-600 leading-relaxed text-lg">{product.description}</p>
