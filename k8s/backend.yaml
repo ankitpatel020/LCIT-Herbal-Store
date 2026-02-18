@@ -40,6 +40,38 @@ spec:
                   name: app-secrets
                   key: JWT_EXPIRE
 
+            # Cloudinary
+            - name: CLOUDINARY_CLOUD_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: CLOUDINARY_CLOUD_NAME
+            
+            - name: CLOUDINARY_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: CLOUDINARY_API_KEY
+
+            - name: CLOUDINARY_API_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: CLOUDINARY_API_SECRET
+
+            # Razorpay
+            - name: RAZORPAY_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: RAZORPAY_KEY_ID
+
+            - name: RAZORPAY_KEY_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: RAZORPAY_KEY_SECRET
+
             - name: PORT
               value: "5000"
 
