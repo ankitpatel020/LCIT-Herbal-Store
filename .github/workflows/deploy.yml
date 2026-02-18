@@ -78,6 +78,7 @@ jobs:
           kubectl get nodes
 
           echo "Applying manifests..."
+          kubectl apply -f secrets.yaml
           kubectl apply -f mongo.yaml
           kubectl apply -f backend.yaml
           kubectl apply -f frontend.yaml
