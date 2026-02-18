@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: ankit4455/lcit-backend:latest
+          image: ankitpatel020/lcit-backend:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 5000
@@ -27,6 +27,18 @@ spec:
                 secretKeyRef:
                   name: app-secrets
                   key: MONGO_URI
+            
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: JWT_SECRET
+
+            - name: JWT_EXPIRE
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: JWT_EXPIRE
 
             - name: PORT
               value: "5000"
