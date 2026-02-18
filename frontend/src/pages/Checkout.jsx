@@ -268,7 +268,7 @@ const Checkout = () => {
                                             {(item.originalPrice > item.price) && (
                                                 <p className="text-xs text-gray-400 line-through">₹{(item.originalPrice * item.quantity).toFixed(2)}</p>
                                             )}
-                                            <p className="font-bold text-gray-900">₹{(item.price * item.quantity).toFixed(2)}</p>
+                                            <p className="font-bold text-green-700">₹{(item.price * item.quantity).toFixed(2)}</p>
                                         </div>
                                     </div>
                                 ))}

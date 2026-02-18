@@ -165,7 +165,7 @@ const ProductDetails = () => {
                         </div>
 
                         <div className="flex items-baseline gap-4 mb-6">
-                            <span className="text-5xl font-bold text-gray-900">₹{finalPrice.toFixed(0)}</span>
+                            <span className="text-5xl font-bold text-green-600">₹{finalPrice.toFixed(0)}</span>
                             {totalDiscountPercent > 0 && (
                                 <>
                                     <span className="text-2xl text-gray-400 line-through font-medium">
