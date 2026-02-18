@@ -164,7 +164,7 @@ const OrderDetails = () => {
                                 <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
                             </div>
                             <h2 className="text-3xl font-bold text-green-800 mb-2">Order Confirmed!</h2>
-                            <p className="text-green-700">Thank you for supporting the Department of Science.</p>
+                            <p className="text-green-700">Thank you for supporting the Department of Chemistry.</p>
                         </div>
                         <div className="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-green-100 rounded-full opacity-50 blur-3xl"></div>
                         <div className="absolute bottom-0 left-0 -mb-10 -ml-10 w-40 h-40 bg-green-100 rounded-full opacity-50 blur-3xl"></div>

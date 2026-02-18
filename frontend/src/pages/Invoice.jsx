@@ -33,7 +33,7 @@ const Invoice = () => {
                     </div>
                     <div>
                         <h1 className="text-3xl font-bold uppercase tracking-wider text-gray-900">LCIT Herbal</h1>
-                        <p className="text-sm font-bold text-gray-600 uppercase tracking-widest mt-1">Department of Science</p>
+                        <p className="text-sm font-bold text-gray-600 uppercase tracking-widest mt-1">Department of Chemistry</p>
                         <p className="text-xs text-gray-500 mt-2 leading-relaxed">
                             LCIT College of Commerce & Science,<br />
                             Bodri, Bilaspur (C.G.) - 495001

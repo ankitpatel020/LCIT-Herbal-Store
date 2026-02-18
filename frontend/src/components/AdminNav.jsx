@@ -17,7 +17,7 @@ const AdminNav = () => {
                 <div className="py-4 border-b border-gray-100 flex justify-between items-center">
                     <div>
                         <h2 className="text-xl font-display font-bold text-gray-900">Admin Portal</h2>
-                        <p className="text-xs text-green-600 font-bold uppercase tracking-widest">Department of Science</p>
+                        <p className="text-xs text-green-600 font-bold uppercase tracking-widest">Department of Chemistry</p>
                     </div>
                     <div className="px-3 py-1 bg-green-50 text-green-700 text-xs font-bold rounded-full uppercase tracking-wide">
                         Authorized Personnel Only

@@ -12,7 +12,7 @@ const Footer = () => {
                             LCIT <span className="text-green-400">Herbal</span>
                         </Link>
                         <p className="text-gray-400 text-sm mb-6 leading-relaxed">
-                            A student-driven initiative by the Department of Science, blending traditional knowledge with modern pharmaceutical practices.
+                            A student-driven initiative by the Department of Chemistry, blending traditional knowledge with modern pharmaceutical practices.
                         </p>
                         <div className="flex space-x-4">
                             {/* Social Icons Placeholders */}
@@ -49,13 +49,13 @@ const Footer = () => {
                         <h3 className="font-bold text-lg mb-6 text-green-400">Visit Us</h3>
                         <address className="not-italic text-gray-400 space-y-4 text-sm">
                             <p>
-                                <strong className="text-white block mb-1">Department of Science</strong>
+                                <strong className="text-white block mb-1">Department of Chemistry</strong>
                                 LCIT College of Commerce & Science,<br />
                                 Bodri, Bilaspur (C.G.) - 495001
                             </p>
                             <p>
                                 <strong className="text-white block mb-1">Email</strong>
-                                science.dept@lcit.edu.in
+                                [EMAIL_ADDRESS]
                             </p>
                             <p>
                                 <strong className="text-white block mb-1">Phone</strong>

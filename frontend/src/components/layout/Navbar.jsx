@@ -30,7 +30,7 @@ const Navbar = () => {
                             <h1 className="text-xl font-display font-bold text-gray-900 leading-none tracking-tight">
                                 LCIT <span className="text-green-600">Herbal</span>
                             </h1>
-                            <span className="text-[10px] text-gray-500 font-bold tracking-widest uppercase mt-0.5">Dept. of Science</span>
+                            <span className="text-[10px] text-gray-500 font-bold tracking-widest uppercase mt-0.5">Dept. of Chemistry</span>
                         </div>
                     </Link>
 

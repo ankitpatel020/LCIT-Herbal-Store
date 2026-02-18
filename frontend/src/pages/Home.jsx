@@ -27,7 +27,7 @@ const Home = () => {
 
                 <div className="relative z-10 container-custom px-4 animate-fade-in-up">
                     <div className="inline-block border border-green-400 bg-green-900/30 backdrop-blur-md rounded-full px-6 py-2 mb-6">
-                        <span className="text-green-300 font-bold tracking-widest uppercase text-sm">Department of Science</span>
+                        <span className="text-green-300 font-bold tracking-widest uppercase text-sm">Department of Chemistry</span>
                     </div>
                     <h1 className="text-4xl md:text-7xl font-display font-bold mb-6 leading-tight drop-shadow-lg">
                         LCIT <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-300">Herbal Store</span>
@@ -115,7 +115,7 @@ const Home = () => {
                             <span className="text-green-300 font-bold tracking-widest uppercase mb-4 block">About the Department</span>
                             <h2 className="text-3xl md:text-5xl font-display font-bold mb-6">Where Science Meets Nature</h2>
                             <p className="text-green-100 text-lg mb-8 leading-relaxed max-w-xl">
-                                At the Department of Science, LCIT Bodri, we bridge the gap between traditional herbal wisdom and modern pharmaceutical science. Our students gain hands-on experience in formulation, manufacturing, and quality control.
+                                At the Department of Chemistry, LCIT Bodri, we bridge the gap between traditional herbal wisdom and modern pharmaceutical science. Our students gain hands-on experience in formulation, manufacturing, and quality control.
                             </p>
 
                             <div className="space-y-6">
@@ -152,7 +152,7 @@ const Home = () => {
                 <div className="container-custom">
                     <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-6">Support Student Innovation</h2>
                     <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-10">
-                        Every purchase directly supports the research and development initiatives of the Department of Science students.
+                        Every purchase directly supports the research and development initiatives of the Department of Chemistry students.
                     </p>
                     <img src="/LCITGroupPhoto.jpg" className="w-full h-64 md:h-80 object-cover rounded-3xl shadow-lg mb-12 grayscale hover:grayscale-0 transition-all duration-700" alt="LCIT Students" />
 

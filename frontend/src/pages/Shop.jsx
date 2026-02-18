@@ -39,7 +39,7 @@ const Shop = () => {
             <div className="bg-green-900 text-white py-16 mb-8 relative overflow-hidden">
                 <div className="absolute inset-0 bg-black/10 pattern-grid opacity-20"></div>
                 <div className="container-custom text-center relative z-10">
-                    <span className="text-green-300 font-bold tracking-widest uppercase text-xs mb-3 block">Department of Science</span>
+                    <span className="text-green-300 font-bold tracking-widest uppercase text-xs mb-3 block">Department of Chemistry</span>
                     <h1 className="text-4xl md:text-5xl font-display font-bold mb-4">Scientific Herbal Formulations</h1>
                     <p className="text-green-100 max-w-2xl mx-auto text-lg">
                         Explore our collection of student-created, lab-tested herbal products.

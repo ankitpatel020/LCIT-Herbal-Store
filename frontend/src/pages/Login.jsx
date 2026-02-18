@@ -60,7 +60,7 @@ const Login = () => {
                         LCIT Herbal Store
                     </h2>
                     <p className="mt-2 text-sm font-medium text-green-600 uppercase tracking-widest">
-                        Department of Science
+                        Department of Chemistry
                     </p>
                     <p className="mt-1 text-xs text-gray-400">
                         LCIT College of Commerce and Science,<br />

@@ -32,6 +32,8 @@ const ProductDetails = () => {
     useEffect(() => {
         if (product?.images?.length > 0) {
             setSelectedImage(product.images[0]?.url || product.images[0]);
+        } else if (product?.image) {
+            setSelectedImage(product.image);
         }
     }, [product]);
 
@@ -261,7 +263,7 @@ const ProductDetails = () => {
                             <div className="prose max-w-none text-gray-600">
                                 <p className="text-lg leading-relaxed">{product.description}</p>
                                 <p className="mt-6">
-                                    <em>This product was formulated and manufactured by the students of the Department of Science, LCIT College of Commerce & Science, under strict faculty supervision.</em>
+                                    <em>This product was formulated and manufactured by the students of the Department of Chemistry, LCIT College of Commerce & Science, under strict faculty supervision.</em>
                                 </p>
                             </div>
                         ) : (

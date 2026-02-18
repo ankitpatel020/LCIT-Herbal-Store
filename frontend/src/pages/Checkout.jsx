@@ -149,7 +149,7 @@ const Checkout = () => {
             orderItems: cartItems.map((item) => ({
                 product: item._id,
                 name: item.name,
-                image: item.images?.[0]?.url || '',
+                image: item.images?.[0]?.url || item.images?.[0] || item.image || '',
                 price: item.price,
                 quantity: item.quantity,
             })),
@@ -258,7 +258,7 @@ const Checkout = () => {
                                 {cartItems.map((item) => (
                                     <div key={item._id} className="flex gap-3 text-sm">
                                         <div className="w-12 h-12 bg-gray-100 rounded-md overflow-hidden flex-shrink-0">
-                                            <img src={item.images?.[0]?.url || item.images?.[0]} alt="" className="w-full h-full object-cover" />
+                                            <img src={item.images?.[0]?.url || item.images?.[0] || item.image} alt="" className="w-full h-full object-cover" />
                                         </div>
                                         <div className="flex-1">
                                             <p className="font-medium text-gray-900 line-clamp-1">{item.name}</p>
@@ -310,7 +310,7 @@ const Checkout = () => {
                             </button>
 
                             <p className="text-[10px] text-gray-400 text-center mt-4">
-                                By placing this order, you agree to the Department of Science Terms of Service.
+                                By placing this order, you agree to the Department of Chemistry Terms of Service.
                             </p>
                         </div>
                     </div>

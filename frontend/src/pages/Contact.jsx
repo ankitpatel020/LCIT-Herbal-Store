@@ -120,7 +120,7 @@ const HelpCenter = () => {
         {
             category: 'products',
             question: 'Are your products lab-tested?',
-            answer: 'Yes, all our herbal products are tested in the LCIT Department of Science laboratory. Each product undergoes quality checks for purity, potency, and safety before being listed on our store.'
+            answer: 'Yes, all our herbal products are tested in the LCIT Department of Chemistry laboratory. Each product undergoes quality checks for purity, potency, and safety before being listed on our store.'
         },
         {
             category: 'products',
@@ -292,7 +292,7 @@ const HelpCenter = () => {
                                     <div>
                                         <h3 className="font-bold text-gray-900 mb-1">Visit Us</h3>
                                         <p className="text-gray-600 text-sm leading-relaxed">
-                                            <strong>Department of Science</strong><br />
+                                            <strong>Department of Chemistry</strong><br />
                                             LCIT College of Commerce & Science<br />
                                             Bodri, Bilaspur (C.G.) - 495001
                                         </p>

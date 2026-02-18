@@ -16,7 +16,7 @@ const About = () => {
                 </div>
                 <div className="relative z-10 container-custom px-4">
                     <span className="inline-block py-1 px-3 rounded-full bg-green-500/20 border border-green-400 text-green-300 text-sm font-semibold mb-4 backdrop-blur-sm">
-                        Department of Science
+                        Department of Chemistry
                     </span>
                     <h1 className="text-3xl md:text-5xl font-display font-bold mb-4 leading-tight">
                         LCIT College of Commerce & Science
@@ -34,7 +34,7 @@ const About = () => {
                         <h2 className="text-3xl font-bold text-gray-900 mb-6">Bridging Education & Innovation</h2>
                         <div className="space-y-4 text-gray-600 text-lg leading-relaxed">
                             <p>
-                                Welcome to the <strong>LCIT Herbal Store</strong>, a unique initiative by the Department of Science. We believe in practical learning that goes beyond textbooks.
+                                Welcome to the <strong>LCIT Herbal Store</strong>, a unique initiative by the Department of Chemistry. We believe in practical learning that goes beyond textbooks.
                             </p>
                             <p>
                                 Our platform showcases products researched, formulated, and developed by our talented students under the expert guidance of our faculty. Located in Bodri, Bilaspur, we utilize the rich herbal biodiversity of Chhattisgarh to create authentic, natural remedies.
@@ -45,7 +45,7 @@ const About = () => {
                         <div className="absolute -inset-4 bg-green-100 rounded-xl transform rotate-3"></div>
                         <img
                             src="/DepartmentofScience.jpg"
-                            alt="Department of Science Team"
+                            alt="Department of Chemistry Team"
                             className="relative rounded-xl shadow-lg w-full"
                         />
                     </div>
@@ -116,7 +116,7 @@ const About = () => {
                             </div>
                             <div className="text-left">
                                 <div className="font-bold text-gray-900">Ankit Patel</div>
-                                <div className="text-sm text-green-600">B.Sc. Student, Dept of Science</div>
+                                <div className="text-sm text-green-600">B.Sc. Student, Dept of Chemistry</div>
                             </div>
                         </div>
                     </div>
