@@ -18,7 +18,7 @@ spec:
         - name: regcred
       containers:
         - name: backend
-          image: ankitpatel020/lcit-backend:latest
+          image: ankit4455/lcit-backend:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 5000
