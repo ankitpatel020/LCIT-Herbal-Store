@@ -73,12 +73,26 @@ const Products = () => {
     const openModal = (product = null) => {
         if (product) {
             setIsEditMode(true);
+
+            // normalize image to object
+            let imageState = null;
+            if (product.images && product.images.length > 0) {
+                const firstImage = product.images[0];
+                if (typeof firstImage === 'string') {
+                    imageState = { url: firstImage };
+                } else {
+                    imageState = firstImage;
+                }
+            } else if (product.image) {
+                // Legacy support
+                imageState = { url: product.image };
+            }
+
             setFormData({
                 id: product._id,
                 name: product.name,
                 price: product.price,
-                // Store the full image object if available, or construct one from url if legacy
-                image: product.images?.[0] || (product.image ? { url: product.image } : null),
+                image: imageState,
                 category: product.category || 'Herbal Soaps',
                 stock: product.stock,
                 description: product.description,
@@ -110,19 +124,29 @@ const Products = () => {
         const file = e.target.files[0];
         if (!file) return;
 
+        // File size check (5MB limit)
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error('File size too large. Max 5MB allowed.');
+            return;
+        }
+
         const data = new FormData();
         data.append('image', file);
+        // data.append('folder', 'lcit-herbal-store/products'); // accurate folder
 
         setUploading(true);
 
         try {
             const config = {
                 headers: {
+                    'Content-Type': 'multipart/form-data',
                     Authorization: `Bearer ${token}`,
                 },
             };
 
+            console.log('Initiating upload...');
             const res = await axios.post(`${API_URL}/upload/image`, data, config);
+            console.log('Upload success:', res.data);
 
             setFormData((prev) => ({
                 ...prev,
@@ -133,14 +157,24 @@ const Products = () => {
                 },
             }));
 
-            toast.success('Image uploaded');
+            toast.success('Image uploaded successfully');
         } catch (err) {
-            console.error('Upload Error:', err);
-            console.error('Error Response:', err.response);
+            console.error('Upload Error Details:', err);
+            if (err.response) {
+                console.error('Error Response Data:', err.response.data);
+                console.error('Error Status:', err.response.status);
+            } else if (err.request) {
+                console.error('No response received:', err.request);
+            } else {
+                console.error('Error Message:', err.message);
+            }
+
             const errorMessage = err.response?.data?.message || err.message || 'Upload failed';
-            toast.error(errorMessage);
+            toast.error(`Upload failed: ${errorMessage}`);
         } finally {
             setUploading(false);
+            // Reset file input value so same file can be selected again if needed
+            e.target.value = '';
         }
     };
 
