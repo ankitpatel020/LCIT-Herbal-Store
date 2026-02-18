@@ -165,17 +165,18 @@ const ProductDetails = () => {
                         </div>
 
                         <div className="flex items-baseline gap-4 mb-6">
-                            {totalDiscountPercent > 0 && (
-                                <span className="text-2xl text-gray-400 line-through font-medium">
-                                    ₹{referencePrice.toLocaleString('en-IN')}
-                                </span>
-                            )}
-                            <span className="text-5xl font-bold text-green-600">₹{finalPrice.toLocaleString('en-IN')}</span>
-                            {totalDiscountPercent > 0 && (
-                                <span className="flex items-center text-green-600 font-bold text-xl">
-                                    <svg className="w-5 h-5 mr-1 fill-current" viewBox="0 0 24 24"><path d="M11 4V17.1716L7.41421 13.5858L6 15L12 21L18 15L16.5858 13.5858L13 17.1716V4H11Z" /></svg>
-                                    {totalDiscountPercent}% OFF
-                                </span>
+                            <span className="text-5xl font-bold text-green-600">
+                                ₹{finalPrice.toLocaleString('en-IN')}
+                            </span>
+                            {referencePrice > finalPrice && (
+                                <>
+                                    <span className="text-2xl text-gray-400 line-through">
+                                        ₹{referencePrice.toLocaleString('en-IN')}
+                                    </span>
+                                    <span className="text-green-600 font-bold text-xl">
+                                        {totalDiscountPercent}% OFF
+                                    </span>
+                                </>
                             )}
                         </div>
 

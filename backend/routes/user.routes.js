@@ -13,6 +13,8 @@ import {
     getPendingStudentVerifications,
     updateStudentProfile,
     withdrawVerification,
+    deactivateAccount,
+    deleteMyAccount,
 } from '../controllers/user.controller.js';
 import { protect, authorize } from '../middleware/auth.js';
 import { uploadAvatar } from '../middleware/upload.js';
@@ -27,6 +29,8 @@ router.delete('/avatar', protect, deleteUserAvatar);
 router.post('/verify-student', protect, submitStudentVerification);
 router.put('/verify-student/withdraw', protect, withdrawVerification);
 router.put('/student-profile', protect, updateStudentProfile);
+router.put('/profile/deactivate', protect, deactivateAccount);
+router.delete('/profile', protect, deleteMyAccount);
 
 // All user management routes are admin-only
 router.use(protect, authorize('admin'));

@@ -266,9 +266,18 @@ const Checkout = () => {
                                         </div>
                                         <div className="text-right">
                                             {(item.originalPrice > item.price) && (
-                                                <p className="text-xs text-gray-400 line-through">₹{(item.originalPrice * item.quantity).toFixed(2)}</p>
+                                                <div className="text-xs text-gray-400 line-through">
+                                                    ₹{(item.originalPrice * item.quantity).toLocaleString('en-IN')}
+                                                </div>
                                             )}
-                                            <p className="font-bold text-green-700">₹{(item.price * item.quantity).toFixed(2)}</p>
+                                            <div className="text-lg font-bold text-green-700">
+                                                ₹{(item.price * item.quantity).toLocaleString('en-IN')}
+                                            </div>
+                                            {(item.originalPrice > item.price) && (
+                                                <div className="text-xs text-green-600 font-semibold">
+                                                    {Math.round(((item.originalPrice - item.price) / item.originalPrice) * 100)}% OFF
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 ))}

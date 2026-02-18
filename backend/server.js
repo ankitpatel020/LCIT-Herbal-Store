@@ -22,6 +22,7 @@ import userRoutes from './routes/user.routes.js';
 import couponRoutes from './routes/coupon.routes.js';
 import uploadRoutes from './routes/upload.routes.js';
 import paymentRoutes from './routes/payment.routes.js';
+import notificationRoutes from './routes/notification.routes.js';
 import Razorpay from 'razorpay';
 
 
@@ -91,6 +92,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/coupons', couponRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/payment', paymentRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Health check route
 app.get('/api/health', (req, res) => {

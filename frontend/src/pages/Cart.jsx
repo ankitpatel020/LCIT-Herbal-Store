@@ -89,11 +89,20 @@ const Cart = () => {
                                         <Link to={`/product/${item._id}`} className="text-lg font-bold text-gray-900 hover:text-green-600 transition-colors">
                                             {item.name}
                                         </Link>
-                                        <div className="flex flex-col sm:items-end mt-2 sm:mt-0">
+                                        <div className="text-right mt-2 sm:mt-0">
                                             {(item.originalPrice > item.price) && (
-                                                <span className="text-sm text-gray-400 line-through">₹{item.originalPrice}</span>
+                                                <div className="text-xs text-gray-400 line-through">
+                                                    ₹{Number(item.originalPrice).toLocaleString('en-IN')}
+                                                </div>
                                             )}
-                                            <span className="text-lg font-bold text-green-700">₹{item.price}</span>
+                                            <div className="text-lg font-bold text-green-700">
+                                                ₹{Number(item.price).toLocaleString('en-IN')}
+                                            </div>
+                                            {(item.originalPrice > item.price) && (
+                                                <div className="text-xs text-green-600 font-semibold">
+                                                    {Math.round(((item.originalPrice - item.price) / item.originalPrice) * 100)}% OFF
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                     <p className="text-sm text-gray-500 mb-4">{item.category}</p>

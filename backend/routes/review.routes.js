@@ -9,6 +9,7 @@ import {
     getAllReviews,
     approveReview,
     getTopReviews,
+    getUserReviews,
 } from '../controllers/review.controller.js';
 import { protect, authorize } from '../middleware/auth.js';
 
@@ -19,6 +20,7 @@ router.get('/top', getTopReviews);
 router.get('/product/:productId', getProductReviews);
 
 // User routes
+router.get('/my/list', protect, getUserReviews);
 router.post('/', protect, createReview);
 router.put('/:id', protect, updateReview);
 router.delete('/:id', protect, deleteReview);

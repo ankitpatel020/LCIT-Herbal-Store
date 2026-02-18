@@ -35,6 +35,32 @@ export const getProductReviews = asyncHandler(async (req, res) => {
     });
 });
 
+// @desc    Get reviews by current user
+// @route   GET /api/reviews/my/list
+// @access  Private
+export const getUserReviews = asyncHandler(async (req, res) => {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const reviews = await Review.find({ user: req.user.id })
+        .sort({ createdAt: -1 })
+        .limit(limit)
+        .skip(skip)
+        .populate('product', 'name images');
+
+    const total = await Review.countDocuments({ user: req.user.id });
+
+    res.status(200).json({
+        success: true,
+        count: reviews.length,
+        total,
+        page,
+        pages: Math.ceil(total / limit),
+        data: reviews,
+    });
+});
+
 // @desc    Create a review
 // @route   POST /api/reviews
 // @access  Private

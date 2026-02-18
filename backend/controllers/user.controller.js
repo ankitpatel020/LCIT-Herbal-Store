@@ -548,3 +548,46 @@ export const withdrawVerification = asyncHandler(async (req, res) => {
         message: 'No pending verification request to withdraw',
     });
 });
+
+// @desc    Deactivate user account
+// @route   PUT /api/users/profile/deactivate
+// @access  Private
+export const deactivateAccount = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+        return res.status(404).json({
+            success: false,
+            message: 'User not found',
+        });
+    }
+
+    user.isActive = false;
+    await user.save();
+
+    res.status(200).json({
+        success: true,
+        message: 'Account deactivated successfully',
+    });
+});
+
+// @desc    Delete user account
+// @route   DELETE /api/users/profile
+// @access  Private
+export const deleteMyAccount = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+        return res.status(404).json({
+            success: false,
+            message: 'User not found',
+        });
+    }
+
+    await user.deleteOne();
+
+    res.status(200).json({
+        success: true,
+        message: 'Account deleted successfully',
+    });
+});

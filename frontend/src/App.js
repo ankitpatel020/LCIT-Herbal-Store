@@ -20,6 +20,8 @@ import OrderDetails from './pages/OrderDetails.jsx';
 import Invoice from './pages/Invoice.jsx';
 import About from './pages/About.jsx';
 import HelpCenter from './pages/Contact.jsx';
+import Terms from './pages/Terms.jsx';
+import PrivacyPolicy from './pages/PrivacyPolicy.jsx';
 
 // Admin Pages
 import AdminDashboard from './pages/admin/Dashboard.jsx';
@@ -75,6 +77,8 @@ function App() {
                         <Route path="/help-center" element={<HelpCenter />} />
                         <Route path="/login" element={<Login />} />
                         <Route path="/register" element={<Register />} />
+                        <Route path="/terms" element={<Terms />} />
+                        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
 
                         {/* Private Routes */}
                         <Route

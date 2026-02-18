@@ -104,20 +104,22 @@ const ProductCard = ({ product }) => {
 
                 <div className="mt-auto flex items-end justify-between gap-2">
                     <div className="flex flex-col">
-                        <div className="flex items-center gap-3">
-                            {referencePrice > finalPrice && (
-                                <span className="text-gray-400 line-through text-lg font-bold">
-                                    ₹{referencePrice.toLocaleString('en-IN')}
-                                </span>
-                            )}
-                            <span className="text-xl font-bold text-green-600">
-                                ₹{finalPrice.toLocaleString('en-IN')}
-                            </span>
+                        <div className="flex flex-col">
                             {totalDiscountPercent > 0 && (
-                                <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full">
-                                    {totalDiscountPercent}% OFF
+                                <span className="text-green-600 text-xs font-bold mb-1">
+                                    ↓ {totalDiscountPercent}% OFF
                                 </span>
                             )}
+                            <div className="flex items-center gap-2">
+                                {referencePrice > finalPrice && (
+                                    <span className="text-gray-400 line-through text-sm font-semibold">
+                                        ₹{referencePrice.toLocaleString('en-IN')}
+                                    </span>
+                                )}
+                                <span className="text-lg font-bold text-gray-900">
+                                    ₹{finalPrice.toLocaleString('en-IN')}
+                                </span>
+                            </div>
                         </div>
                     </div>
 
