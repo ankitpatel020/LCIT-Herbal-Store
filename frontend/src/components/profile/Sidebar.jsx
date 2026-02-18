@@ -90,6 +90,18 @@ const Sidebar = ({ activeTab, setActiveTab, user, onLogout, mobile = false }) =>
                                     </Link>
                                 </li>
                             )}
+                            {/* Agent Dashboard */}
+                            {section.title === 'My Account' && user?.role === 'agent' && (
+                                <li>
+                                    <Link
+                                        to="/agent/dashboard"
+                                        className="w-full text-left px-3 py-2.5 rounded-xl text-sm font-medium text-blue-600 hover:bg-blue-50 flex items-center gap-3 transition-colors"
+                                    >
+                                        <span className="text-lg opacity-80">🛡️</span>
+                                        Agent Dashboard
+                                    </Link>
+                                </li>
+                            )}
                         </ul>
                     </div>
                 ))}

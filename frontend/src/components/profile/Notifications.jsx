@@ -9,25 +9,26 @@ const Notifications = () => {
     const { token } = useSelector((state) => state.auth);
 
     useEffect(() => {
-        fetchNotifications();
-    }, [token]);
+        const fetchNotifications = async () => {
+            try {
+                const config = {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                };
+                const { data } = await axios.get('/api/notifications', config);
+                setNotifications(data.data);
+            } catch (error) {
+                console.error(error);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-    const fetchNotifications = async () => {
-        try {
-            const config = {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            };
-            const { data } = await axios.get('/api/notifications', config);
-            setNotifications(data.data);
-        } catch (error) {
-            console.error(error);
-            // Don't toast error on fetch to avoid spamming user if notified service isn't ready
-        } finally {
-            setLoading(false);
+        if (token) {
+            fetchNotifications();
         }
-    };
+    }, [token]);
 
     const markAsRead = async (id) => {
         try {

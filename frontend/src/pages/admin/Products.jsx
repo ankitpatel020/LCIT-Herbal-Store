@@ -10,7 +10,6 @@ import {
 import toast from 'react-hot-toast';
 import axios from 'axios';
 
-// Use frontend env override when available, or default to relative /api for production proxy
 const API_URL = process.env.REACT_APP_API_URL || '/api';
 
 const initialFormState = {
@@ -28,9 +27,8 @@ const initialFormState = {
 
 const Products = () => {
     const dispatch = useDispatch();
-    const { products, isLoading, isError, message, isSuccess } = useSelector(
-        (state) => state.products
-    );
+    const { products, isLoading, isError, message, isSuccess } =
+        useSelector((state) => state.products);
     const { token } = useSelector((state) => state.auth);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -50,14 +48,28 @@ const Products = () => {
         'Other',
     ], []);
 
-    const { name, price, originalPrice, images, category, stock, description, studentDiscount, facultyDiscount } = formData;
+    const {
+        name,
+        price,
+        originalPrice,
+        images,
+        category,
+        stock,
+        description,
+        studentDiscount,
+        facultyDiscount,
+    } = formData;
 
-    // 🔹 Fetch products
+    /* ===============================
+       FETCH PRODUCTS
+    =============================== */
     useEffect(() => {
         dispatch(getProducts({}));
     }, [dispatch]);
 
-    // 🔹 Handle success / error
+    /* ===============================
+       SUCCESS / ERROR HANDLING
+    =============================== */
     useEffect(() => {
         if (isError) {
             toast.error(message || 'Something went wrong');
@@ -71,19 +83,31 @@ const Products = () => {
         }
     }, [isError, isSuccess, message, dispatch, isModalOpen]);
 
+    /* ===============================
+       LIVE DISCOUNT PREVIEW
+    =============================== */
+    const discountPreview = useMemo(() => {
+        const mrpValue = Number(originalPrice);
+        const priceValue = Number(price);
+
+        if (!mrpValue || !priceValue) return 0;
+        if (mrpValue <= priceValue) return 0;
+
+        return Math.round(((mrpValue - priceValue) / mrpValue) * 100);
+    }, [originalPrice, price]);
+
+    /* ===============================
+       MODAL
+    =============================== */
     const openModal = (product = null) => {
         if (product) {
             setIsEditMode(true);
 
-            // normalize images
             let imageList = [];
-            if (product.images && product.images.length > 0) {
+            if (product.images?.length > 0) {
                 imageList = product.images.map(img =>
                     typeof img === 'string' ? { url: img } : img
                 );
-            } else if (product.image) {
-                // Legacy support
-                imageList = [{ url: product.image }];
             }
 
             setFormData({
@@ -102,6 +126,7 @@ const Products = () => {
             setIsEditMode(false);
             setFormData(initialFormState);
         }
+
         setIsModalOpen(true);
     };
 
@@ -112,28 +137,27 @@ const Products = () => {
     };
 
     const onChange = (e) => {
-        setFormData((prev) => ({
+        setFormData(prev => ({
             ...prev,
             [e.target.name]: e.target.value,
         }));
     };
 
-    // 🔹 Image Upload
+    /* ===============================
+       IMAGE UPLOAD
+    =============================== */
     const uploadFileHandler = async (e) => {
         const files = Array.from(e.target.files);
-        if (files.length === 0) return;
+        if (!files.length) return;
 
-        // File size check (5MB limit per file)
         const invalidFile = files.find(file => file.size > 5 * 1024 * 1024);
         if (invalidFile) {
-            toast.error(`File ${invalidFile.name} is too large. Max 5MB allowed.`);
+            toast.error(`File ${invalidFile.name} exceeds 5MB limit`);
             return;
         }
 
         const data = new FormData();
-        files.forEach(file => {
-            data.append('images', file);
-        });
+        files.forEach(file => data.append('images', file));
 
         setUploading(true);
 
@@ -145,52 +169,53 @@ const Products = () => {
                 },
             };
 
-            console.log('Initiating upload...');
-            // Changed endpoint to support multiple images
-            const res = await axios.post(`${API_URL}/upload/images`, data, config);
-            console.log('Upload success:', res.data);
+            const res = await axios.post(
+                `${API_URL}/upload/images`,
+                data,
+                config
+            );
 
-            setFormData((prev) => ({
+            setFormData(prev => ({
                 ...prev,
-                // Append new images to existing list
                 images: [...prev.images, ...res.data.data],
             }));
 
-            toast.success(`${files.length} image(s) uploaded successfully`);
+            toast.success(`${files.length} image(s) uploaded`);
         } catch (err) {
-            console.error('Upload Error Details:', err);
-            const errorMessage = err.response?.data?.message || err.message || 'Upload failed';
-            toast.error(`Upload failed: ${errorMessage}`);
+            toast.error(err.response?.data?.message || 'Upload failed');
         } finally {
             setUploading(false);
-            // Reset file input value
             e.target.value = '';
         }
     };
 
     const removeImage = (indexToRemove) => {
-        setFormData((prev) => ({
+        setFormData(prev => ({
             ...prev,
-            images: prev.images.filter((_, index) => index !== indexToRemove),
+            images: prev.images.filter((_, i) => i !== indexToRemove),
         }));
     };
 
-    // 🔹 Submit
+    /* ===============================
+       SUBMIT
+    =============================== */
     const onSubmit = (e) => {
         e.preventDefault();
+
+        if (originalPrice && Number(originalPrice) < Number(price)) {
+            return toast.error('MRP must be greater than Price');
+        }
 
         const productData = {
             name,
             price: Number(price),
             description,
             category,
-            category,
             stock: Number(stock),
-            originalPrice: Number(originalPrice),
+            originalPrice: Number(originalPrice) || 0,
             studentDiscount: Number(studentDiscount),
             facultyDiscount: Number(facultyDiscount),
-            // Send array of image objects
-            images: images,
+            images,
         };
 
         if (isEditMode) {
@@ -206,205 +231,258 @@ const Products = () => {
         }
     };
 
+    /* ===============================
+       UI
+    =============================== */
     return (
-        <>
-            <div className="section pt-0 px-0">
-                <div className="w-full">
-                    <div className="flex justify-between items-center mb-8">
-                        <h1 className="text-3xl font-bold">Products</h1>
-                        <button onClick={() => openModal()} className="btn btn-primary">
-                            + Create Product
-                        </button>
-                    </div>
+        <div className="section pt-0 px-0">
+            <div className="w-full">
+                <div className="flex justify-between items-center mb-8">
+                    <h1 className="text-3xl font-bold">Products</h1>
+                    <button onClick={() => openModal()} className="btn btn-primary">
+                        + Create Product
+                    </button>
+                </div>
 
-                    {isLoading ? (
-                        <div className="text-center py-10">Loading...</div>
-                    ) : (
-                        <div className="overflow-x-auto bg-white rounded-lg shadow">
-                            <table className="w-full text-left border-collapse">
-                                <thead>
-                                    <tr className="bg-gray-100 border-b">
-                                        <th className="p-4">ID</th>
-                                        <th className="p-4">Name</th>
-                                        <th className="p-4">Price</th>
-                                        <th className="p-4">Student Disc.</th>
-                                        <th className="p-4">Faculty Disc.</th>
-                                        <th className="p-4">Category</th>
-                                        <th className="p-4">Stock</th>
-                                        <th className="p-4">Actions</th>
+                {/* TABLE */}
+                <div className="overflow-x-auto bg-white rounded-lg shadow">
+                    <table className="w-full text-left border-collapse">
+                        <thead>
+                            <tr className="bg-gray-100 border-b">
+                                <th className="p-4">Name</th>
+                                <th className="p-4">Price</th>
+                                <th className="p-4">Category</th>
+                                <th className="p-4">Stock</th>
+                                <th className="p-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {products.map(product => {
+                                const hasDiscount =
+                                    product.originalPrice > product.price;
+
+                                const discount =
+                                    hasDiscount
+                                        ? Math.round(
+                                            ((product.originalPrice -
+                                                product.price) /
+                                                product.originalPrice) *
+                                            100
+                                        )
+                                        : 0;
+
+                                return (
+                                    <tr key={product._id} className="border-b hover:bg-gray-50">
+                                        <td className="p-4 font-medium">{product.name}</td>
+
+                                        <td className="p-4">
+                                            {hasDiscount ? (
+                                                <div className="flex flex-col">
+                                                    <span className="text-xs text-gray-400 line-through">
+                                                        ₹{product.originalPrice.toLocaleString('en-IN')}
+                                                    </span>
+                                                    <span className="font-bold text-green-600">
+                                                        ₹{product.price.toLocaleString('en-IN')}
+                                                    </span>
+                                                    <span className="text-[10px] text-green-700 font-bold">
+                                                        {discount}% OFF
+                                                    </span>
+                                                </div>
+                                            ) : (
+                                                <span className="font-bold">
+                                                    ₹{product.price.toLocaleString('en-IN')}
+                                                </span>
+                                            )}
+                                        </td>
+
+                                        <td className="p-4">{product.category}</td>
+                                        <td className="p-4">{product.stock}</td>
+
+                                        <td className="p-4 space-x-3">
+                                            <button
+                                                onClick={() => openModal(product)}
+                                                className="text-blue-600"
+                                            >
+                                                Edit
+                                            </button>
+                                            <button
+                                                onClick={() => onDelete(product._id)}
+                                                className="text-red-600"
+                                            >
+                                                Delete
+                                            </button>
+                                        </td>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    {products.map((product) => (
-                                        <tr key={product._id} className="border-b hover:bg-gray-50">
-                                            <td className="p-4 text-sm text-gray-500">
-                                                {product._id.slice(-6)}
-                                            </td>
-                                            <td className="p-4 font-medium">{product.name}</td>
-                                            <td className="p-4">
-                                                {product.originalPrice > product.price ? (
-                                                    <div className="flex flex-col">
-                                                        <span className="text-xs text-gray-400 line-through">₹{product.originalPrice}</span>
-                                                        <span className="font-bold text-green-600">₹{product.price}</span>
-                                                        <span className="text-[10px] text-green-700 font-bold">{Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF</span>
-                                                    </div>
-                                                ) : (
-                                                    <span className="font-bold">₹{product.price}</span>
-                                                )}
-                                            </td>
-                                            <td className="p-4">
-                                                <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-medium">{product.studentDiscount ?? 25}%</span>
-                                            </td>
-                                            <td className="p-4">
-                                                <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full font-medium">{product.facultyDiscount ?? 50}%</span>
-                                            </td>
-                                            <td className="p-4">{product.category}</td>
-                                            <td className="p-4">{product.stock}</td>
-                                            <td className="p-4 space-x-3">
-                                                <button
-                                                    onClick={() => openModal(product)}
-                                                    className="text-blue-600"
-                                                >
-                                                    Edit
-                                                </button>
-                                                <button
-                                                    onClick={() => onDelete(product._id)}
-                                                    className="text-red-600"
-                                                >
-                                                    Delete
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
+                                );
+                            })}
+                        </tbody>
+                    </table>
+                </div>
 
-                                    {products.length === 0 && (
-                                        <tr>
-                                            <td colSpan="8" className="p-8 text-center text-gray-500">
-                                                No products found.
-                                            </td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
+                {/* MODAL */}
+                {isModalOpen && (
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                        <div className="bg-white rounded-lg w-full max-w-2xl p-6 space-y-4">
+                            <h2 className="text-xl font-bold">
+                                {isEditMode ? 'Edit Product' : 'Create Product'}
+                            </h2>
 
-                    {/* Modal */}
-                    {isModalOpen && (
-                        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                            <div className="bg-white rounded-lg w-full max-w-2xl">
-                                <div className="p-6 border-b flex justify-between items-center">
-                                    <h2 className="text-xl font-bold">
-                                        {isEditMode ? 'Edit Product' : 'Create Product'}
-                                    </h2>
-                                    <button onClick={closeModal}>✕</button>
+                            <form onSubmit={onSubmit} className="space-y-4">
+                                <div className="grid md:grid-cols-2 gap-4">
+                                    <input
+                                        name="name"
+                                        value={name}
+                                        onChange={onChange}
+                                        className="input"
+                                        placeholder="Name"
+                                        required
+                                    />
+                                    <input
+                                        type="number"
+                                        name="price"
+                                        value={price}
+                                        onChange={onChange}
+                                        className="input"
+                                        placeholder="Price"
+                                        required
+                                    />
+                                    <select
+                                        name="category"
+                                        value={category}
+                                        onChange={onChange}
+                                        className="input"
+                                    >
+                                        {categories.map((cat) => (
+                                            <option key={cat}>{cat}</option>
+                                        ))}
+                                    </select>
+                                    <input
+                                        type="number"
+                                        name="stock"
+                                        value={stock}
+                                        onChange={onChange}
+                                        className="input"
+                                        placeholder="Stock"
+                                        required
+                                    />
                                 </div>
 
-                                <form onSubmit={onSubmit} className="p-6 space-y-4">
-                                    <div className="grid md:grid-cols-2 gap-4">
-                                        <input name="name" value={name} onChange={onChange} className="input" placeholder="Name" required />
-                                        <input type="number" name="price" value={price} onChange={onChange} className="input" placeholder="Price" required />
-                                        <select name="category" value={category} onChange={onChange} className="input">
-                                            {categories.map((cat) => (
-                                                <option key={cat}>{cat}</option>
+                                <div className="space-y-4 border p-4 rounded-lg bg-gray-50">
+                                    <div className="flex items-center gap-2">
+                                        <label className="btn btn-sm bg-gray-200 cursor-pointer">
+                                            Choose Images
+                                            <input
+                                                type="file"
+                                                multiple
+                                                onChange={uploadFileHandler}
+                                                className="hidden"
+                                                accept="image/*"
+                                            />
+                                        </label>
+                                        <span className="text-xs text-gray-500">Max 5MB each</span>
+                                        {uploading && <span className="text-sm text-blue-500 animate-pulse">Uploading...</span>}
+                                    </div>
+
+                                    {images && images.length > 0 && (
+                                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
+                                            {images.map((img, index) => (
+                                                <div key={index} className="relative group">
+                                                    <img
+                                                        src={img?.url || img}
+                                                        alt={`Preview ${index}`}
+                                                        className="h-24 w-full object-cover rounded-md border border-gray-200"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeImage(index)}
+                                                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+                                                        title="Remove Image"
+                                                    >
+                                                        ✕
+                                                    </button>
+                                                </div>
                                             ))}
-                                        </select>
-                                        <input type="number" name="stock" value={stock} onChange={onChange} className="input" placeholder="Stock" required />
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="grid md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="text-xs font-bold text-gray-500">MRP (Original Price)</label>
+                                        <input
+                                            type="number"
+                                            name="originalPrice"
+                                            value={originalPrice}
+                                            onChange={onChange}
+                                            className="input mt-1"
+                                            placeholder="e.g. 1999"
+                                        />
                                     </div>
-
-
-                                    <div className="space-y-4">
-                                        <div className="flex items-center gap-2">
-                                            <label className="btn btn-sm bg-gray-200 cursor-pointer">
-                                                Choose Files
-                                                <input type="file" multiple onChange={uploadFileHandler} className="hidden" accept="image/*" />
-                                            </label>
-                                            <span className="text-xs text-gray-500">Max 5MB each</span>
-                                            {uploading && <span className="text-sm text-blue-500 animate-pulse">Uploading...</span>}
-                                        </div>
-
-                                        {images && images.length > 0 && (
-                                            <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
-                                                {images.map((img, index) => (
-                                                    <div key={index} className="relative group">
-                                                        <img
-                                                            src={img?.url || img}
-                                                            alt={`Preview ${index}`}
-                                                            className="h-24 w-full object-cover rounded-md border border-gray-200"
-                                                        />
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => removeImage(index)}
-                                                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
-                                                            title="Remove Image"
-                                                        >
-                                                            ✕
-                                                        </button>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
+                                    <div>
+                                        <label className="text-xs font-bold text-gray-500">Student Discount (%)</label>
+                                        <input
+                                            type="number"
+                                            name="studentDiscount"
+                                            value={studentDiscount}
+                                            onChange={onChange}
+                                            className="input mt-1"
+                                            placeholder="25"
+                                        />
                                     </div>
+                                    <div>
+                                        <label className="text-xs font-bold text-gray-500">Faculty Discount (%)</label>
+                                        <input
+                                            type="number"
+                                            name="facultyDiscount"
+                                            value={facultyDiscount}
+                                            onChange={onChange}
+                                            className="input mt-1"
+                                            placeholder="50"
+                                        />
+                                    </div>
+                                </div>
 
-                                    <textarea name="description" value={description} onChange={onChange} rows="4" className="input" placeholder="Description" required />
-
-                                    {/* Price & Discounts */}
-                                    <div className="grid md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
-                                        <div>
-                                            <label className="block text-sm font-semibold text-gray-700 mb-1">MRP (Original Price)</label>
-                                            <input
-                                                type="number"
-                                                name="originalPrice"
-                                                value={originalPrice}
-                                                onChange={onChange}
-                                                className="input"
-                                                placeholder="e.g. 1999"
-                                                min="0"
-                                            />
-                                            <p className="text-xs text-gray-500 mt-1">Set higher than Price to show discount</p>
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm font-semibold text-green-700 mb-1">🎓 Student Discount (%)</label>
-                                            <input
-                                                type="number"
-                                                name="studentDiscount"
-                                                value={studentDiscount}
-                                                onChange={onChange}
-                                                className="input"
-                                                placeholder="25"
-                                                min="0"
-                                                max="100"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-semibold text-blue-700 mb-1">👨‍🏫 Faculty Discount (%)</label>
-                                            <input
-                                                type="number"
-                                                name="facultyDiscount"
-                                                value={facultyDiscount}
-                                                onChange={onChange}
-                                                className="input"
-                                                placeholder="50"
-                                                min="0"
-                                                max="100"
-                                            />
+                                {discountPreview > 0 && (
+                                    <div className="bg-green-50 border border-green-200 p-3 rounded-lg text-sm">
+                                        🔥 <b>{discountPreview}% OFF</b> Calculated based on MRP vs Price
+                                        <div className="text-xs mt-1 text-gray-600">
+                                            ₹{Number(originalPrice).toLocaleString('en-IN')} → ₹{Number(price).toLocaleString('en-IN')}
                                         </div>
                                     </div>
+                                )}
 
-                                    <div className="flex justify-end gap-3">
-                                        <button type="button" onClick={closeModal} className="btn bg-gray-200">Cancel</button>
-                                        <button type="submit" className="btn btn-primary" disabled={isLoading || uploading}>
-                                            {isLoading ? 'Saving...' : isEditMode ? 'Update' : 'Create'}
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
+                                <textarea
+                                    name="description"
+                                    value={description}
+                                    onChange={onChange}
+                                    className="input"
+                                    placeholder="Description"
+                                    rows="3"
+                                    required
+                                />
+
+                                <div className="flex justify-end gap-3 pt-4">
+                                    <button
+                                        type="button"
+                                        onClick={closeModal}
+                                        className="btn bg-gray-200"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className="btn btn-primary"
+                                        disabled={isLoading || uploading}
+                                    >
+                                        {isLoading || uploading ? 'Saving...' : isEditMode ? 'Update' : 'Create'}
+                                    </button>
+                                </div>
+                            </form>
                         </div>
-                    )}
-                </div >
-            </div >
-        </>
+                    </div>
+                )}
+            </div>
+        </div>
     );
 };
 
