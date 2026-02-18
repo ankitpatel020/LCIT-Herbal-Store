@@ -14,6 +14,8 @@ spec:
       labels:
         app: backend
     spec:
+      imagePullSecrets:
+        - name: regcred
       containers:
         - name: backend
           image: ankitpatel020/lcit-backend:latest
