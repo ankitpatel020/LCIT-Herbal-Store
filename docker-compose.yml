@@ -1,0 +1,64 @@
+version: "3.8"
+
+services:
+  backend:
+    build: ./backend
+    container_name: lcit-backend
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://mongo:27017/lcit-herbal-store
+      - JWT_SECRET=lcit_herbal_store_secret_key_2024_chemistry_dept
+      - JWT_EXPIRE=7d
+      # Add other secrets here or load from .env file
+      - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}
+      - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
+      - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
+      - RAZORPAY_KEY_ID=${RAZORPAY_KEY_ID}
+      - RAZORPAY_KEY_SECRET=${RAZORPAY_KEY_SECRET}
+    depends_on:
+      - mongo
+    networks:
+      - lcit-network
+
+  frontend:
+    build: ./frontend
+    container_name: lcit-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - lcit-network
+
+  mongo:
+    image: mongo:latest
+    container_name: lcit-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - lcit-network
+
+  mongo-express:
+    image: mongo-express
+    container_name: lcit-mongo-express
+    ports:
+      - "8081:8081"
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=mongo
+      - ME_CONFIG_MONGODB_PORT=27017
+    depends_on:
+      - mongo
+    networks:
+      - lcit-network
+
+networks:
+  lcit-network:
+    driver: bridge
+
+volumes:
+  mongo-data:

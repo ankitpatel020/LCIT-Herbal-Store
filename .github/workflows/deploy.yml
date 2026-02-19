@@ -51,6 +51,11 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    - name: Update Kubernetes Manifests
+      run: |
+        sed -i "s|ankit4455/lcit-backend:latest|${{ secrets.DOCKER_USERNAME }}/lcit-backend:${GITHUB_SHA::7}|g" k8s/backend.yaml
+        sed -i "s|ankit4455/lcit-frontend:latest|${{ secrets.DOCKER_USERNAME }}/lcit-frontend:${GITHUB_SHA::7}|g" k8s/frontend.yaml
+
     - name: Copy k8s files to EC2
       uses: appleboy/scp-action@v0.1.7
       with:
@@ -67,6 +72,7 @@ jobs:
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
+          # Install/Setup K3s env
           if command -v k3s &> /dev/null; then
             export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
             alias kubectl='k3s kubectl'
@@ -84,7 +90,7 @@ jobs:
           kubectl apply -f frontend.yaml
           kubectl apply -f ingress.yaml
 
-          echo "Restarting deployments..."
+          echo "Restarting deployments to pick up new image..."
           kubectl rollout restart deployment/backend
           kubectl rollout restart deployment/frontend
 

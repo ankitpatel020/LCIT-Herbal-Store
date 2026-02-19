@@ -133,7 +133,6 @@ const couponSchema = new mongoose.Schema(
 /* ================================
    INDEXES
 ================================ */
-couponSchema.index({ code: 1 });
 couponSchema.index({ isActive: 1 });
 couponSchema.index({ applicableFor: 1 });
 
