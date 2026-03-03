@@ -14,14 +14,19 @@ import Cart from './pages/Cart.jsx';
 import Checkout from './pages/Checkout.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
+import ForgotPassword from './pages/ForgotPassword.jsx';
+import ResetPassword from './pages/ResetPassword.jsx';
+import Manufacturing from './pages/Manufacturing.jsx';
+import NotFound from './pages/NotFound.jsx';
+import { ThankYou } from './pages/ThankYou.jsx';
 import Profile from './pages/Profile.jsx';
 import Orders from './pages/Orders.jsx';
 import OrderDetails from './pages/OrderDetails.jsx';
 import Invoice from './pages/Invoice.jsx';
 import About from './pages/About.jsx';
-import HelpCenter from './pages/Contact.jsx';
 import Terms from './pages/Terms.jsx';
 import PrivacyPolicy from './pages/PrivacyPolicy.jsx';
+import HelpCenter from './pages/HelpCenter.jsx';
 
 // Admin Pages
 import AdminDashboard from './pages/admin/Dashboard.jsx';
@@ -30,16 +35,25 @@ import AdminOrders from './pages/admin/Orders.jsx';
 import AdminUsers from './pages/admin/Users.jsx';
 import AdminReviews from './pages/admin/Reviews.jsx';
 import AdminCoupons from './pages/admin/Coupons.jsx';
+import AdminFAQs from './pages/admin/FAQs.jsx';
+import AgentPayments from './pages/admin/AgentPayments.jsx';
+import AgentDetails from './pages/admin/AgentDetails.jsx';
 
 // Agent Pages
 import AgentDashboard from './pages/agent/Dashboard.jsx';
 import AgentOrders from './pages/agent/Orders.jsx';
+import AgentPaymentsPage from './pages/agent/Payments.jsx';
+
+// Support Pages
+import ChatDashboard from './pages/support/ChatDashboard.jsx';
 
 // Components
 import PrivateRoute from './components/PrivateRoute.jsx';
 import AdminRoute from './components/AdminRoute.jsx';
 import AgentRoute from './components/AgentRoute.jsx';
+import SupportRoute from './components/SupportRoute.jsx';
 import ScrollToTop from './components/ScrollToTop.jsx';
+import ChatWidget from './components/chat/ChatWidget.jsx';
 
 function App() {
     return (
@@ -74,11 +88,15 @@ function App() {
                         <Route path="/product/:id" element={<ProductDetails />} />
                         <Route path="/cart" element={<Cart />} />
                         <Route path="/about" element={<About />} />
-                        <Route path="/help-center" element={<HelpCenter />} />
                         <Route path="/login" element={<Login />} />
                         <Route path="/register" element={<Register />} />
                         <Route path="/terms" element={<Terms />} />
                         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                        <Route path="/forgot-password" element={<ForgotPassword />} />
+                        <Route path="/reset-password/:token" element={<ResetPassword />} />
+                        <Route path="*" element={<NotFound />} />
+                        <Route path="/manufacturing" element={<Manufacturing />} />
+                        <Route path="/help-center" element={<HelpCenter />} />
 
                         {/* Private Routes */}
                         <Route
@@ -118,6 +136,15 @@ function App() {
                             element={
                                 <PrivateRoute>
                                     <Invoice />
+                                </PrivateRoute>
+                            }
+                        />
+
+                        <Route
+                            path="/thank-you"
+                            element={
+                                <PrivateRoute>
+                                    <ThankYou />
                                 </PrivateRoute>
                             }
                         />
@@ -189,8 +216,51 @@ function App() {
                                 </AdminRoute>
                             }
                         />
+                        <Route
+                            path="/admin/faqs"
+                            element={
+                                <AdminRoute>
+                                    <AdminFAQs />
+                                </AdminRoute>
+                            }
+                        />
+                        <Route
+                            path="/admin/agent-payments"
+                            element={
+                                <AdminRoute>
+                                    <AgentPayments />
+                                </AdminRoute>
+                            }
+                        />
+                        <Route
+                            path="/admin/agent-payments/:id"
+                            element={
+                                <AdminRoute>
+                                    <AgentDetails />
+                                </AdminRoute>
+                            }
+                        />
+
+                        {/* Support Routes */}
+                        <Route
+                            path="/agent/payments"
+                            element={
+                                <AgentRoute>
+                                    <AgentPaymentsPage />
+                                </AgentRoute>
+                            }
+                        />
+                        <Route
+                            path="/support/chat"
+                            element={
+                                <SupportRoute>
+                                    <ChatDashboard />
+                                </SupportRoute>
+                            }
+                        />
                     </Routes>
                 </main>
+                <ChatWidget />
                 <Footer />
             </div>
         </Router>

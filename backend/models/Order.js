@@ -78,6 +78,19 @@ const orderSchema = new mongoose.Schema(
             enum: ['Pending', 'Processing', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled', 'Returned'],
             default: 'Pending',
         },
+        agent: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+        },
+        agentCommission: {
+            type: Number,
+            default: 0,
+        },
+        commissionStatus: {
+            type: String,
+            enum: ['pending', 'settled'],
+            default: 'pending',
+        },
         isPaid: {
             type: Boolean,
             default: false,

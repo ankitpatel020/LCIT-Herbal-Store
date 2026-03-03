@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateProfile } from '../../store/slices/authSlice';
+import toast from 'react-hot-toast';
 
 const ManageAddress = ({ user }) => {
     const dispatch = useDispatch();
@@ -29,8 +30,8 @@ const ManageAddress = ({ user }) => {
     }, [user]);
 
     const onAddressChange = (e) => {
-        setAddressData((prevState) => ({
-            ...prevState,
+        setAddressData((prev) => ({
+            ...prev,
             [e.target.name]: e.target.value,
         }));
     };
@@ -38,99 +39,135 @@ const ManageAddress = ({ user }) => {
     const onSubmitAddress = (e) => {
         e.preventDefault();
 
-        const userData = {
-            address: addressData,
-        };
+        if (!street || !city || !state || !pincode) {
+            toast.error('Please fill all required fields');
+            return;
+        }
 
-        dispatch(updateProfile(userData));
+        if (!/^\d{6}$/.test(pincode)) {
+            toast.error('Enter valid 6-digit pincode');
+            return;
+        }
+
+        dispatch(updateProfile({ address: addressData }));
     };
 
     return (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-400 to-indigo-600"></div>
+        <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-8 relative overflow-hidden">
 
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-400 to-emerald-600"></div>
+
+            {/* HEADER */}
             <div className="flex justify-between items-center mb-8">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-800">Manage Address</h2>
-                    <p className="text-gray-500 text-sm mt-1">Update your shipping details.</p>
+                    <h2 className="text-2xl font-bold text-gray-900">
+                        Shipping Address
+                    </h2>
+                    <p className="text-gray-500 text-sm mt-1">
+                        This address will be used for order delivery.
+                    </p>
                 </div>
-                <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center text-2xl">
+                <div className="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center text-xl">
                     🏠
                 </div>
             </div>
 
-            <form onSubmit={onSubmitAddress} className="space-y-6">
+            <form onSubmit={onSubmitAddress} className="space-y-8">
+
+                {/* STREET */}
                 <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Street Address</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Street Address *
+                    </label>
                     <input
                         type="text"
                         name="street"
                         value={street}
                         onChange={onAddressChange}
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
-                        placeholder="123 Main St, Apartment 4B"
+                        placeholder="House No, Street, Area"
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500 bg-gray-50 focus:bg-white transition"
                     />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* CITY + STATE */}
+                <div className="grid md:grid-cols-2 gap-6">
+
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">City</label>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            City *
+                        </label>
                         <input
                             type="text"
                             name="city"
                             value={city}
                             onChange={onAddressChange}
-                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
                             placeholder="Bilaspur"
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500 bg-gray-50 focus:bg-white transition"
                         />
                     </div>
+
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">State</label>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            State *
+                        </label>
                         <input
                             type="text"
                             name="state"
                             value={state}
                             onChange={onAddressChange}
-                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
                             placeholder="Chhattisgarh"
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500 bg-gray-50 focus:bg-white transition"
                         />
                     </div>
+
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* PINCODE + COUNTRY */}
+                <div className="grid md:grid-cols-2 gap-6">
+
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Pincode</label>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            Pincode *
+                        </label>
                         <input
                             type="text"
                             name="pincode"
                             value={pincode}
                             onChange={onAddressChange}
-                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
                             placeholder="495001"
+                            maxLength={6}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500 bg-gray-50 focus:bg-white transition"
                         />
+                        <p className="text-xs text-gray-400 mt-1">
+                            6-digit Indian postal code
+                        </p>
                     </div>
+
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Country</label>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            Country
+                        </label>
                         <input
                             type="text"
-                            name="country"
                             value={country}
-                            onChange={onAddressChange}
-                            className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 cursor-not-allowed"
                             readOnly
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-100 text-gray-500 cursor-not-allowed"
                         />
                     </div>
+
                 </div>
 
-                <div className="flex justify-end pt-4">
+                {/* SUBMIT */}
+                <div className="flex justify-end">
                     <button
                         type="submit"
-                        className="btn bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-blue-200 transition-all transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-70"
                         disabled={isLoading}
+                        className="px-8 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-lg shadow-emerald-600/30 transition disabled:opacity-70"
                     >
-                        {isLoading ? 'Updating Address...' : 'Save Address'}
+                        {isLoading ? 'Saving...' : 'Save Address'}
                     </button>
                 </div>
+
             </form>
         </div>
     );

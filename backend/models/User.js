@@ -28,8 +28,12 @@ const userSchema = new mongoose.Schema(
         },
         role: {
             type: String,
-            enum: ['user', 'admin', 'agent'],
+            enum: ['user', 'admin', 'agent', 'support'],
             default: 'user',
+        },
+        commissionRate: {
+            type: Number,
+            default: 0.1, // 10% default
         },
         phone: {
             type: String,

@@ -102,7 +102,7 @@ const Verification = ({ user }) => {
         formData.append('image', file);
         formData.append('folder', folder);
 
-        const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+        const API_URL = process.env.REACT_APP_API_URL || '/api';
         const config = {
             headers: {
                 'Content-Type': 'multipart/form-data',
@@ -170,25 +170,26 @@ const Verification = ({ user }) => {
     };
 
     return (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-400 to-pink-600"></div>
+        <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-emerald-100/50 p-8 relative overflow-hidden transition-all duration-300">
+            {/* Elegant Header Gradient */}
+            <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-emerald-400 via-teal-500 to-emerald-600"></div>
 
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex justify-between items-center mb-8">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-800">Verification Center</h2>
-                    <p className="text-gray-500 text-sm mt-1">Get verified to unlock exclusive college discounts.</p>
+                    <h2 className="text-3xl font-serif font-extrabold text-gray-900 tracking-tight">Verification Center</h2>
+                    <p className="text-gray-500 font-medium mt-1">Get verified to unlock exclusive campus discounts.</p>
                 </div>
-                <div className="w-12 h-12 bg-purple-50 rounded-full flex items-center justify-center text-2xl">
-                    ✅
+                <div className="w-14 h-14 bg-emerald-50 rounded-2xl flex items-center justify-center shadow-inner border border-emerald-100 shrink-0">
+                    <span className="text-2xl">🎓</span>
                 </div>
             </div>
 
-            {/* Tabs */}
-            <div className="flex bg-gray-50 p-1 rounded-xl mb-8 w-fit">
+            {/* Premium Pill Tabs */}
+            <div className="flex bg-stone-100/80 p-1.5 rounded-2xl mb-10 w-fit border border-stone-200/50 shadow-inner">
                 {!user?.isLCITFaculty && (
                     <button
                         onClick={() => setActiveTab('student')}
-                        className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'student' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'
+                        className={`px-8 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${activeTab === 'student' ? 'bg-white shadow-md text-emerald-700' : 'text-gray-500 hover:text-gray-900 hover:bg-stone-200/50'
                             }`}
                     >
                         Student
@@ -197,7 +198,7 @@ const Verification = ({ user }) => {
                 {!user?.isLCITStudent && (
                     <button
                         onClick={() => setActiveTab('faculty')}
-                        className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'faculty' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'
+                        className={`px-8 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${activeTab === 'faculty' ? 'bg-white shadow-md text-emerald-700' : 'text-gray-500 hover:text-gray-900 hover:bg-stone-200/50'
                             }`}
                     >
                         Faculty
@@ -306,17 +307,17 @@ const Verification = ({ user }) => {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">ID Card Photo</label>
+                                <label className="block text-sm font-bold text-gray-700 mb-2">ID Card Photo</label>
                                 <div
-                                    className="border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center hover:border-green-500 transition-colors cursor-pointer bg-gray-50 hover:bg-white"
+                                    className="border-2 border-dashed border-emerald-200 rounded-2xl p-8 text-center hover:border-emerald-500 hover:bg-emerald-50/30 transition-all duration-300 cursor-pointer bg-stone-50"
                                     onClick={() => document.getElementById('student-id-upload').click()}
                                 >
                                     {verifyData.idProofPreview ? (
-                                        <div className="relative inline-block">
-                                            <img src={verifyData.idProofPreview} alt="Preview" className="h-48 object-contain rounded-lg shadow-sm" />
+                                        <div className="relative inline-block group">
+                                            <img src={verifyData.idProofPreview} alt="Preview" className="h-48 object-contain rounded-xl shadow-md group-hover:opacity-90 transition-opacity" />
                                             <button
                                                 type="button"
-                                                className="absolute -top-3 -right-3 bg-red-500 text-white rounded-full p-1 shadow-md hover:bg-red-600"
+                                                className="absolute -top-3 -right-3 bg-red-500 text-white rounded-full p-2 shadow-lg hover:bg-red-600 hover:scale-110 transition-transform"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     setVerifyData(prev => ({ ...prev, idProofFile: null, idProofPreview: '' }));
@@ -326,10 +327,10 @@ const Verification = ({ user }) => {
                                             </button>
                                         </div>
                                     ) : (
-                                        <div className="space-y-2">
-                                            <div className="text-4xl">📷</div>
-                                            <p className="font-semibold text-gray-600">Click to upload ID Card</p>
-                                            <p className="text-xs text-gray-400">JPG, PNG up to 5MB</p>
+                                        <div className="space-y-3">
+                                            <div className="text-5xl mb-2 hover:scale-110 transition-transform duration-300">�</div>
+                                            <p className="font-bold text-gray-700 text-lg">Click to scan ID Card</p>
+                                            <p className="text-xs font-semibold text-gray-400 tracking-wide uppercase">JPG, PNG up to 5MB</p>
                                         </div>
                                     )}
                                     <input
@@ -342,13 +343,13 @@ const Verification = ({ user }) => {
                                 </div>
                             </div>
 
-                            <div className="flex justify-end">
+                            <div className="flex justify-end pt-4">
                                 <button
                                     type="submit"
-                                    className="btn bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-green-200 transition-all transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-70 disabled:cursor-not-allowed"
+                                    className="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-10 py-4 rounded-2xl font-bold text-lg shadow-[0_4px_14px_rgba(16,185,129,0.3)] hover:shadow-[0_6px_20px_rgba(16,185,129,0.4)] transition-all transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-70 disabled:cursor-not-allowed"
                                     disabled={isLoading || isUploading}
                                 >
-                                    {isUploading ? 'Uploading Proof...' : isLoading ? 'Submitting...' : 'Submit Verification'}
+                                    {isUploading ? 'Securely Uploading...' : isLoading ? 'Submitting...' : 'Submit Verification'}
                                 </button>
                             </div>
                         </form>
@@ -358,109 +359,109 @@ const Verification = ({ user }) => {
 
             {/* Faculty Content */}
             {activeTab === 'faculty' && !user?.isLCITStudent && (
-                <div>
+                <div className="animate-fade-in">
                     {user.isLCITFaculty ? (
-                        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-8 text-center">
-                            <div className="w-20 h-20 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">
+                        <div className="bg-gradient-to-br from-teal-50 to-emerald-50 border border-teal-100 rounded-3xl p-10 text-center shadow-sm">
+                            <div className="w-24 h-24 bg-white shadow-sm text-teal-600 rounded-full flex items-center justify-center mx-auto mb-5 text-4xl">
                                 👨‍🏫
                             </div>
-                            <h4 className="text-xl font-bold text-blue-800 mb-2">Verified Faculty</h4>
-                            <p className="text-blue-700 max-w-md mx-auto mb-6">
+                            <h4 className="text-2xl font-serif font-bold text-teal-900 mb-3">Verified Faculty</h4>
+                            <p className="text-teal-700/80 max-w-md mx-auto mb-8 font-medium">
                                 You are a verified LCIT Faculty member. Thank you for being part of our community.
                             </p>
-                            <div className="bg-white/50 inline-block px-8 py-4 rounded-xl text-left shadow-sm">
-                                <p className="mb-1"><span className="font-bold text-blue-900 w-24 inline-block">ID:</span> {user.employeeId}</p>
-                                <p className="mb-1"><span className="font-bold text-blue-900 w-24 inline-block">Dept:</span> {user.facultyDepartment}</p>
-                                <p><span className="font-bold text-blue-900 w-24 inline-block">Role:</span> {user.designation}</p>
+                            <div className="bg-white/80 backdrop-blur-sm inline-block px-10 py-6 rounded-2xl text-left shadow-lg border border-teal-50">
+                                <p className="mb-2"><span className="font-bold text-teal-900/50 uppercase tracking-widest text-xs w-24 inline-block">Emp ID</span> <span className="font-mono text-teal-900 font-bold ml-4">{user.employeeId}</span></p>
+                                <p className="mb-2"><span className="font-bold text-teal-900/50 uppercase tracking-widest text-xs w-24 inline-block">Dept</span> <span className="font-bold text-teal-900 ml-4">{user.facultyDepartment}</span></p>
+                                <p><span className="font-bold text-teal-900/50 uppercase tracking-widest text-xs w-24 inline-block">Role</span> <span className="font-bold text-teal-900 ml-4">{user.designation}</span></p>
                             </div>
                         </div>
                     ) : user.facultyVerificationStatus === 'pending' ? (
-                        <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-8 text-center">
-                            <div className="w-20 h-20 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-3xl p-10 text-center shadow-sm">
+                            <div className="w-24 h-24 bg-white shadow-sm text-yellow-500 rounded-full flex items-center justify-center mx-auto mb-5 text-4xl">
                                 ⏳
                             </div>
-                            <h4 className="text-xl font-bold text-yellow-800 mb-2">Verification Pending</h4>
-                            <p className="text-yellow-700 max-w-md mx-auto mb-6">
-                                Your faculty details are under verification.
+                            <h4 className="text-2xl font-serif font-bold text-yellow-800 mb-3">Verification Pending</h4>
+                            <p className="text-yellow-700/80 max-w-md mx-auto mb-8 font-medium">
+                                Your faculty details are under secure review.
                             </p>
                             <button
                                 onClick={() => {
                                     if (window.confirm('Are you sure you want to withdraw?')) dispatch(withdrawVerification('faculty'));
                                 }}
-                                className="text-sm font-bold text-yellow-700 underline hover:text-yellow-900"
+                                className="text-sm font-bold text-yellow-600 hover:text-yellow-800 border-b-2 border-yellow-200 hover:border-yellow-400 pb-0.5 transition-colors"
                             >
                                 Withdraw Request
                             </button>
                         </div>
                     ) : (
-                        <form onSubmit={onSubmitFaculty} className="space-y-6">
+                        <form onSubmit={onSubmitFaculty} className="space-y-8">
                             {user.facultyVerificationStatus === 'rejected' && (
-                                <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl mb-6 flex items-start gap-3">
-                                    <span className="text-xl mt-0.5">⚠️</span>
+                                <div className="bg-red-50 border border-red-200 text-red-700 p-5 rounded-2xl mb-6 flex items-start gap-4 shadow-sm">
+                                    <span className="text-2xl mt-0.5">⚠️</span>
                                     <div>
-                                        <strong className="font-bold block">Verification Rejected</strong>
-                                        <span className="text-sm">Please check your details and try again.</span>
+                                        <strong className="font-bold text-lg block mb-1">Verification Rejected</strong>
+                                        <span className="text-sm">Please check your details and try again. Ensure the image is legible.</span>
                                     </div>
                                 </div>
                             )}
 
-                            <div className="bg-blue-50 border border-blue-100 p-4 rounded-xl text-blue-800 text-sm mb-6 flex gap-3">
-                                <span className="text-xl">ℹ️</span>
-                                <p>Faculty verification requires a valid Employee ID and department ID card scan.</p>
+                            <div className="bg-gradient-to-r from-teal-50 to-emerald-50 border border-teal-100 p-5 rounded-2xl text-teal-800 text-sm mb-6 flex items-center gap-4 shadow-sm">
+                                <span className="text-2xl">🛡️</span>
+                                <p className="font-medium">Faculty verification requires a valid Employee ID and department ID card scan.</p>
                             </div>
 
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">Employee ID</label>
+                                <label className="block text-sm font-bold text-gray-700 mb-2">Employee ID</label>
                                 <input
                                     type="text"
                                     name="employeeId"
                                     value={facultyVerifyData.employeeId}
                                     onChange={onFacultyVerifyChange}
-                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none uppercase font-mono"
-                                    placeholder="LCITFAC..."
+                                    className="w-full px-5 py-4 rounded-2xl border border-gray-200 focus:border-teal-500 focus:ring-4 focus:ring-teal-50 outline-none uppercase font-mono transition-all font-medium text-gray-900"
+                                    placeholder="LCITFAC-001"
                                     required
                                 />
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Department</label>
+                                    <label className="block text-sm font-bold text-gray-700 mb-2">Department</label>
                                     <input
                                         type="text"
                                         name="department"
                                         value={facultyVerifyData.department}
                                         onChange={onFacultyVerifyChange}
-                                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none"
-                                        placeholder="E.g. Science"
+                                        className="w-full px-5 py-4 rounded-2xl border border-gray-200 focus:border-teal-500 focus:ring-4 focus:ring-teal-50 outline-none transition-all font-medium text-gray-900"
+                                        placeholder="E.g. Chemistry"
                                         required
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Designation</label>
+                                    <label className="block text-sm font-bold text-gray-700 mb-2">Designation</label>
                                     <input
                                         type="text"
                                         name="designation"
                                         value={facultyVerifyData.designation}
                                         onChange={onFacultyVerifyChange}
-                                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none"
-                                        placeholder="E.g. Professor"
+                                        className="w-full px-5 py-4 rounded-2xl border border-gray-200 focus:border-teal-500 focus:ring-4 focus:ring-teal-50 outline-none transition-all font-medium text-gray-900"
+                                        placeholder="E.g. Assistant Professor"
                                         required
                                     />
                                 </div>
                             </div>
 
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">ID Card Photo</label>
+                                <label className="block text-sm font-bold text-gray-700 mb-2">ID Card Photo</label>
                                 <div
-                                    className="border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center hover:border-blue-500 transition-colors cursor-pointer bg-gray-50 hover:bg-white"
+                                    className="border-2 border-dashed border-teal-200 rounded-2xl p-8 text-center hover:border-teal-500 hover:bg-teal-50/30 transition-all duration-300 cursor-pointer bg-stone-50"
                                     onClick={() => document.getElementById('faculty-id-upload').click()}
                                 >
                                     {facultyVerifyData.idProofPreview ? (
-                                        <div className="relative inline-block">
-                                            <img src={facultyVerifyData.idProofPreview} alt="Preview" className="h-48 object-contain rounded-lg shadow-sm" />
+                                        <div className="relative inline-block group">
+                                            <img src={facultyVerifyData.idProofPreview} alt="Preview" className="h-48 object-contain rounded-xl shadow-md group-hover:opacity-90 transition-opacity" />
                                             <button
                                                 type="button"
-                                                className="absolute -top-3 -right-3 bg-red-500 text-white rounded-full p-1 shadow-md hover:bg-red-600"
+                                                className="absolute -top-3 -right-3 bg-red-500 text-white rounded-full p-2 shadow-lg hover:bg-red-600 hover:scale-110 transition-transform"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     setFacultyVerifyData(prev => ({ ...prev, idProofFile: null, idProofPreview: '' }));
@@ -470,10 +471,10 @@ const Verification = ({ user }) => {
                                             </button>
                                         </div>
                                     ) : (
-                                        <div className="space-y-2">
-                                            <div className="text-4xl">📷</div>
-                                            <p className="font-semibold text-gray-600">Click to upload Faculty ID</p>
-                                            <p className="text-xs text-gray-400">JPG, PNG up to 5MB</p>
+                                        <div className="space-y-3">
+                                            <div className="text-5xl mb-2 hover:scale-110 transition-transform duration-300">�</div>
+                                            <p className="font-bold text-gray-700 text-lg">Click to scan Faculty ID</p>
+                                            <p className="text-xs font-semibold text-gray-400 tracking-wide uppercase">JPG, PNG up to 5MB</p>
                                         </div>
                                     )}
                                     <input
@@ -486,13 +487,13 @@ const Verification = ({ user }) => {
                                 </div>
                             </div>
 
-                            <div className="flex justify-end">
+                            <div className="flex justify-end pt-4">
                                 <button
                                     type="submit"
-                                    className="btn bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-blue-200 transition-all transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-70 disabled:cursor-not-allowed"
+                                    className="w-full md:w-auto bg-teal-600 hover:bg-teal-700 text-white px-10 py-4 rounded-2xl font-bold text-lg shadow-[0_4px_14px_rgba(20,184,166,0.3)] hover:shadow-[0_6px_20px_rgba(20,184,166,0.4)] transition-all transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-70 disabled:cursor-not-allowed"
                                     disabled={isLoading || isUploading}
                                 >
-                                    {isUploading ? 'Uploading...' : isLoading ? 'Submitting...' : 'Submit Verification'}
+                                    {isUploading ? 'Securely Uploading...' : isLoading ? 'Submitting...' : 'Submit Verification'}
                                 </button>
                             </div>
                         </form>

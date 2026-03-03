@@ -13,8 +13,11 @@ const Sidebar = ({ user, mobile = false }) => {
         { title: 'Products', path: '/admin/products', icon: '🛍️' },
         { title: 'Orders', path: '/admin/orders', icon: '📦' },
         { title: 'Users', path: '/admin/users', icon: '👥' },
+        { title: 'Agent Payments', path: '/admin/agent-payments', icon: '💸' },
         { title: 'Reviews', path: '/admin/reviews', icon: '⭐' },
         { title: 'Coupons', path: '/admin/coupons', icon: '🎟️' },
+        { title: 'FAQs', path: '/admin/faqs', icon: '❓' },
+        { title: 'Support Inbox', path: '/support/chat', icon: '💬' },
     ];
 
     const onLogout = () => {

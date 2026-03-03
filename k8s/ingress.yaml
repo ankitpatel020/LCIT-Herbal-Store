@@ -3,13 +3,27 @@ kind: Ingress
 metadata:
   name: lcit-ingress
   annotations:
-    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
 spec:
   ingressClassName: nginx
+  tls:
+    - hosts:
+        - HOST_NAME
+      secretName: lcit-tls
   rules:
-    - http:
+    - host: HOST_NAME
+      http:
         paths:
           - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: backend-service
+                port:
+                  number: 5000
+
+          - path: /socket.io
             pathType: Prefix
             backend:
               service:

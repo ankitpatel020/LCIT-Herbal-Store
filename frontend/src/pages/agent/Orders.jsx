@@ -50,11 +50,11 @@ const Orders = () => {
 
     return (
         <AgentLayout>
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="bg-white rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 overflow-hidden">
                 {/* Header & Filters */}
                 <div className="p-6 border-b border-gray-100 flex flex-col md:flex-row gap-4 justify-between items-center bg-gray-50/50">
                     <div>
-                        <h2 className="text-xl font-bold text-gray-800">Order Management</h2>
+                        <h2 className="text-xl font-bold text-gray-900">Order Management</h2>
                         <p className="text-sm text-gray-500 mt-1">View and manage customer orders ({filteredOrders?.length || 0})</p>
                     </div>
 
@@ -63,7 +63,7 @@ const Orders = () => {
                             <input
                                 type="text"
                                 placeholder="Search order ID or customer..."
-                                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 w-full"
+                                className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none w-full shadow-sm"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
@@ -75,7 +75,7 @@ const Orders = () => {
                         </div>
 
                         <select
-                            className="px-4 py-2 border border-blue-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 bg-white"
+                            className="px-4 py-2 border border-gray-200 shadow-sm rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-white cursor-pointer"
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value)}
                         >
@@ -97,7 +97,7 @@ const Orders = () => {
                     ) : filteredOrders?.length > 0 ? (
                         <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className="bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                <tr className="bg-gray-50/50 border-b border-gray-100 text-[11px] font-bold text-gray-500 uppercase tracking-wider">
                                     <th className="px-6 py-4">Order Details</th>
                                     <th className="px-6 py-4">Customer</th>
                                     <th className="px-6 py-4">Payment</th>
@@ -107,43 +107,43 @@ const Orders = () => {
                             </thead>
                             <tbody className="divide-y divide-gray-100">
                                 {filteredOrders.map((order) => (
-                                    <tr key={order._id} className="hover:bg-gray-50 transition-colors">
+                                    <tr key={order._id} className="hover:bg-gray-50/50 transition-colors">
                                         <td className="px-6 py-4">
                                             <div className="flex flex-col">
                                                 <span className="font-bold text-gray-900 text-sm">#{order._id.slice(-8).toUpperCase()}</span>
                                                 <span className="text-xs text-gray-500 mt-1">{new Date(order.createdAt).toLocaleDateString()}</span>
-                                                <div className="bg-gray-100 mt-2 px-2 py-1 rounded text-xs inline-block max-w-max">
+                                                <div className="bg-gray-100 mt-2 px-2.5 py-1 rounded text-xs font-medium inline-block max-w-max">
                                                     ₹{order.totalPrice.toFixed(2)}
                                                 </div>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex items-center">
-                                                <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-xs mr-3">
+                                                <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs mr-3">
                                                     {order.user?.name?.charAt(0) || 'G'}
                                                 </div>
                                                 <div>
-                                                    <p className="text-sm font-medium text-gray-900">{order.user?.name || 'Guest User'}</p>
+                                                    <p className="text-sm font-bold text-gray-900">{order.user?.name || 'Guest User'}</p>
                                                     <p className="text-xs text-gray-500">{order.user?.email}</p>
                                                 </div>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border
+                                            <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase border
                                                 ${order.isPaid
-                                                    ? 'bg-green-50 text-green-700 border-green-200'
+                                                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                                                     : 'bg-red-50 text-red-700 border-red-200'}
                                             `}>
-                                                <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${order.isPaid ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                                                <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${order.isPaid ? 'bg-emerald-500' : 'bg-red-500'}`}></span>
                                                 {order.isPaid ? 'Paid' : 'Unpaid'}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex flex-col gap-2 max-w-[140px]">
-                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border w-fit
+                                                <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase border w-fit
                                                     ${order.isDelivered
                                                         ? 'bg-blue-50 text-blue-700 border-blue-200'
-                                                        : 'bg-yellow-50 text-yellow-700 border-yellow-200'}
+                                                        : 'bg-amber-50 text-amber-700 border-amber-200'}
                                                 `}>
                                                     {order.isDelivered ? 'Delivered' : order.orderStatus || 'Processing'}
                                                 </span>
@@ -151,7 +151,7 @@ const Orders = () => {
                                                 {/* Status Update Dropdown */}
                                                 {!order.isDelivered && (
                                                     <select
-                                                        className="block w-full text-xs border border-gray-300 rounded px-2 py-1 bg-white focus:ring-1 focus:ring-indigo-500 hover:border-indigo-400 transition-colors cursor-pointer shadow-sm"
+                                                        className="block w-full text-[11px] font-semibold tracking-wide border border-gray-200 rounded-md px-2 py-1.5 bg-white focus:ring-1 focus:ring-emerald-500 hover:border-emerald-400 transition-colors cursor-pointer shadow-sm outline-none"
                                                         value={order.orderStatus || 'Pending'}
                                                         onChange={(e) => handleStatusUpdate(order._id, e.target.value)}
                                                         onClick={(e) => e.stopPropagation()}
@@ -168,7 +168,7 @@ const Orders = () => {
                                         <td className="px-6 py-4 text-center">
                                             <Link
                                                 to={`/order/${order._id}`}
-                                                className="inline-flex items-center justify-center px-3 py-1.5 border border-indigo-600 text-indigo-600 rounded-lg text-xs font-medium hover:bg-indigo-50 transition-colors"
+                                                className="inline-flex items-center justify-center px-4 py-1.5 border border-emerald-600 text-emerald-600 rounded-lg text-xs font-bold hover:bg-emerald-600 hover:text-white transition-all shadow-sm"
                                             >
                                                 Details
                                             </Link>
@@ -178,15 +178,15 @@ const Orders = () => {
                             </tbody>
                         </table>
                     ) : (
-                        <div className="p-12 text-center">
-                            <div className="inline-block p-4 rounded-full bg-gray-50 mb-4">
+                        <div className="p-16 text-center">
+                            <div className="inline-block p-4 rounded-full bg-gray-50 mb-4 border border-gray-100">
                                 <span className="text-4xl" role="img" aria-label="search">🔍</span>
                             </div>
-                            <h3 className="text-lg font-medium text-gray-900">No orders found</h3>
+                            <h3 className="text-lg font-bold text-gray-900">No orders found</h3>
                             <p className="text-gray-500 mt-1">Try adjusting your search or filters.</p>
                             <button
                                 onClick={() => { setSearchTerm(''); setStatusFilter('All'); }}
-                                className="mt-4 text-indigo-600 hover:text-indigo-800 text-sm font-bold hover:underline"
+                                className="mt-4 text-emerald-600 hover:text-emerald-700 text-sm font-bold hover:underline"
                             >
                                 Clear Filters
                             </button>
@@ -195,9 +195,9 @@ const Orders = () => {
 
                     {/* Footer / Pagination Placeholder */}
                     {filteredOrders?.length > 0 && (
-                        <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-between">
-                            <p className="text-xs text-gray-500">
-                                Showing <span className="font-medium">{filteredOrders.length}</span> results
+                        <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/80 flex items-center justify-between">
+                            <p className="text-xs text-gray-500 font-medium">
+                                Showing <span className="font-bold text-gray-900">{filteredOrders.length}</span> results
                             </p>
                         </div>
                     )}

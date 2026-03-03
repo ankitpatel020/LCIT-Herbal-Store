@@ -14,7 +14,8 @@ const Checkout = () => {
     const { cartItems } = useSelector((state) => state.cart);
     const { isError, message } = useSelector((state) => state.orders);
     const { user, token } = useSelector((state) => state.auth);
-    const { appliedCoupon: coupon, isLoading: isCouponLoading } = useSelector((state) => state.coupons);
+    const { appliedCoupon: coupon, isLoading: isCouponLoading } =
+        useSelector((state) => state.coupons);
 
     const [paymentMethod, setPaymentMethod] = useState('COD');
     const [couponCode, setCouponCode] = useState('');
@@ -32,30 +33,59 @@ const Checkout = () => {
     /* ===============================
        CALCULATIONS
     =============================== */
-    const { subtotal, totalSavings } = useMemo(() => {
+    const {
+        totalMRP,
+        totalPlatformDiscount,
+        totalRoleDiscount,
+        subtotal,
+        roleName
+    } = useMemo(() => {
+        let mrpTotal = 0;
+        let pDiscount = 0;
+        let rDiscount = 0;
         let sub = 0;
-        let savings = 0;
+        let items = 0;
+        let currentRole = null;
+
+        if (user?.isLCITFaculty) currentRole = 'Faculty';
+        else if (user?.isLCITStudent) currentRole = 'Student';
 
         cartItems.forEach(item => {
-            const price = Number(item.price) || 0;
-            const mrp = Number(item.originalPrice) || price;
+            const qty = item.quantity || 1;
+            const singlePrice = Number(item.price) || 0;
+            const singleRegular = Number(item.regularPrice) || singlePrice;
+            const singleMrp = Number(item.originalPrice) || singleRegular;
 
-            sub += price * item.quantity;
+            mrpTotal += singleMrp * qty;
 
-            if (mrp > price) {
-                savings += (mrp - price) * item.quantity;
+            if (singleMrp > singleRegular) {
+                pDiscount += (singleMrp - singleRegular) * qty;
             }
+
+            if (singleRegular > singlePrice) {
+                rDiscount += (singleRegular - singlePrice) * qty;
+            }
+
+            sub += singlePrice * qty;
+            items += qty;
         });
 
-        return { subtotal: sub, totalSavings: savings };
-    }, [cartItems]);
+        return {
+            totalMRP: mrpTotal,
+            totalPlatformDiscount: pDiscount,
+            totalRoleDiscount: rDiscount,
+            subtotal: sub,
+            totalItems: items,
+            roleName: currentRole
+        };
+    }, [cartItems, user]);
 
     const discountAmount = coupon?.discountAmount || 0;
-    const finalTotal = Math.max(0, subtotal - discountAmount);
+    const subtotalAfterCoupon = Math.max(0, subtotal - discountAmount);
+    const shippingFee = subtotalAfterCoupon >= 100 ? 0 : 50;
+    const finalTotal = subtotalAfterCoupon + shippingFee;
+    const totalSavingsBreakdown = totalPlatformDiscount + totalRoleDiscount + discountAmount;
 
-    /* ===============================
-       EFFECTS
-    =============================== */
     useEffect(() => {
         if (isError) {
             toast.error(message);
@@ -63,11 +93,11 @@ const Checkout = () => {
         }
     }, [isError, message, dispatch]);
 
-    /* ===============================
-       HANDLERS
-    =============================== */
     const handleChange = (e) => {
-        setShippingAddress({ ...shippingAddress, [e.target.name]: e.target.value });
+        setShippingAddress({
+            ...shippingAddress,
+            [e.target.name]: e.target.value,
+        });
     };
 
     const handleApplyCoupon = () => {
@@ -75,7 +105,7 @@ const Checkout = () => {
         dispatch(validateCoupon({ code: couponCode, orderAmount: subtotal }))
             .unwrap()
             .then(() => {
-                toast.success('Coupon applied!');
+                toast.success('Coupon applied 🌿');
                 setCouponCode('');
             })
             .catch(err => toast.error(err || 'Invalid coupon'));
@@ -86,64 +116,14 @@ const Checkout = () => {
         toast.success('Coupon removed');
     };
 
-    const handleOnlinePayment = async (orderData) => {
-        try {
-            const API_URL = process.env.REACT_APP_API_URL || '/api';
-
-            const { data: { key } } = await axios.get(`${API_URL}/payment/getkey`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-
-            const { data: { order } } = await axios.post(
-                `${API_URL}/payment/checkout`,
-                { amount: orderData.totalPrice },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-
-            const options = {
-                key,
-                amount: order.amount,
-                currency: "INR",
-                name: "LCIT Herbal Store",
-                description: "Order Payment",
-                order_id: order.id,
-                handler: async function (response) {
-                    try {
-                        const verifyData = {
-                            ...response,
-                            order_id: orderData._id
-                        };
-
-                        const { data } = await axios.post(
-                            `${API_URL}/payment/verification`,
-                            verifyData,
-                            { headers: { Authorization: `Bearer ${token}` } }
-                        );
-
-                        if (data.success) {
-                            toast.success('Payment Successful');
-                            dispatch(clearCart());
-                            navigate(`/order/${orderData._id}?success=true`);
-                        } else {
-                            toast.error('Payment Verification Failed');
-                        }
-                    } catch {
-                        toast.error('Payment Verification Error');
-                    }
-                },
-                prefill: {
-                    name: user?.name,
-                    email: user?.email,
-                    contact: shippingAddress.phone,
-                },
-                theme: { color: "#16a34a" }
-            };
-
-            new window.Razorpay(options).open();
-
-        } catch (error) {
-            toast.error('Payment initialization failed');
-        }
+    const loadRazorpay = () => {
+        return new Promise((resolve) => {
+            const script = document.createElement('script');
+            script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+            script.onload = () => resolve(true);
+            script.onerror = () => resolve(false);
+            document.body.appendChild(script);
+        });
     };
 
     const handleSubmit = async (e) => {
@@ -162,23 +142,100 @@ const Checkout = () => {
             paymentMethod,
             itemsPrice: subtotal,
             taxPrice: 0,
-            shippingPrice: 0,
+            shippingPrice: shippingFee,
             discountPrice: discountAmount,
             totalPrice: finalTotal,
             coupon: coupon ? coupon.code : null,
         };
 
-        const result = await dispatch(createOrder(orderData));
+        if (paymentMethod === 'Razorpay') {
+            const res = await loadRazorpay();
+            if (!res) {
+                toast.error('Razorpay SDK failed to load. Are you online?');
+                return;
+            }
 
-        if (createOrder.fulfilled.match(result)) {
-            const newOrder = result.payload.data;
+            try {
+                // 1. Create order in our DB (unpaid)
+                const dbOrderResult = await dispatch(createOrder(orderData)).unwrap();
+                const dbOrder = dbOrderResult.data;
 
-            if (paymentMethod === 'Razorpay') {
-                await handleOnlinePayment(newOrder);
-            } else {
-                toast.success('Order placed successfully!');
+                // 2. Fetch Razorpay key
+                const API_URL = process.env.REACT_APP_API_URL || '/api';
+                const { data: { key } } = await axios.get(`${API_URL}/payment/getkey`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+
+                // 3. Create Razorpay order
+                const { data: { order: rzpOrder } } = await axios.post(
+                    `${API_URL}/payment/checkout`,
+                    { amount: finalTotal },
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
+
+                // 4. Open Razorpay modal
+                const options = {
+                    key,
+                    amount: rzpOrder.amount,
+                    currency: rzpOrder.currency,
+                    name: 'LCIT Herbal Store',
+                    description: 'Checkout Payment',
+                    order_id: rzpOrder.id,
+                    handler: async function (response) {
+                        try {
+                            // 5. Verify payment
+                            await axios.post(
+                                `${API_URL}/payment/verification`,
+                                {
+                                    razorpay_payment_id: response.razorpay_payment_id,
+                                    razorpay_order_id: response.razorpay_order_id,
+                                    razorpay_signature: response.razorpay_signature,
+                                    order_id: dbOrder._id
+                                },
+                                { headers: { Authorization: `Bearer ${token}` } }
+                            );
+
+                            toast.success('Payment successful! 🌿');
+                            dispatch(clearCart());
+                            navigate(`/thank-you?orderId=${dbOrder._id}&success=true`);
+                        } catch (err) {
+                            toast.error('Payment verification failed');
+                            navigate(`/orders`);
+                        }
+                    },
+                    prefill: {
+                        name: user?.name || '',
+                        email: user?.email || '',
+                        ...(shippingAddress.phone || user?.phone ? { contact: shippingAddress.phone || user?.phone } : {})
+                    },
+                    theme: {
+                        color: '#059669' // emerald-600
+                    },
+                    modal: {
+                        ondismiss: function () {
+                            toast.error('Payment window closed. You can pay later from Orders.');
+                            dispatch(clearCart());
+                            navigate(`/orders`);
+                        }
+                    }
+                };
+
+                const rzp = new window.Razorpay(options);
+                rzp.open();
+
+            } catch (err) {
+                console.error(err);
+                toast.error(err?.response?.data?.message || err?.message || 'Error initializing payment');
+            }
+        } else {
+            // COD Logic
+            const result = await dispatch(createOrder(orderData));
+
+            if (createOrder.fulfilled.match(result)) {
+                const newOrder = result.payload.data;
+                toast.success('Order placed successfully 🌿');
                 dispatch(clearCart());
-                navigate(`/order/${newOrder._id}?success=true`);
+                navigate(`/thank-you?orderId=${newOrder._id}`);
             }
         }
     };
@@ -187,17 +244,29 @@ const Checkout = () => {
        UI
     =============================== */
     return (
-        <div className="bg-gray-50 min-h-screen py-12">
+        <div className="bg-gradient-to-b from-stone-50 to-emerald-50/30 min-h-screen py-14">
             <div className="container-custom">
-                <h1 className="text-3xl font-bold mb-8">Secure Checkout</h1>
 
-                <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="flex items-center gap-3 mb-10">
+                    <span className="text-3xl">🔒</span>
+                    <h1 className="text-4xl font-serif font-bold">
+                        Secure Herbal Checkout
+                    </h1>
+                </div>
 
-                    {/* LEFT */}
+                <form
+                    onSubmit={handleSubmit}
+                    className="grid grid-cols-1 lg:grid-cols-3 gap-10"
+                >
+
+                    {/* LEFT SIDE */}
                     <div className="lg:col-span-2 space-y-8">
 
-                        <div className="bg-white p-8 rounded-2xl shadow border">
-                            <h2 className="text-xl font-bold mb-6">Shipping Details</h2>
+                        {/* Shipping */}
+                        <div className="bg-white p-8 rounded-3xl shadow-lg border border-emerald-100">
+                            <h2 className="text-2xl font-bold mb-6">
+                                Shipping Details
+                            </h2>
 
                             <div className="grid md:grid-cols-2 gap-6">
                                 {['name', 'phone', 'street', 'city', 'state', 'pincode'].map(field => (
@@ -209,18 +278,27 @@ const Checkout = () => {
                                         onChange={handleChange}
                                         required
                                         placeholder={field.toUpperCase()}
-                                        className="px-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                                        className="px-4 py-3 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-emerald-500 outline-none transition"
                                     />
                                 ))}
                             </div>
                         </div>
 
-                        <div className="bg-white p-8 rounded-2xl shadow border">
-                            <h2 className="text-xl font-bold mb-6">Payment Method</h2>
+                        {/* Payment */}
+                        <div className="bg-white p-8 rounded-3xl shadow-lg border border-emerald-100">
+                            <h2 className="text-2xl font-bold mb-6">
+                                Payment Method
+                            </h2>
 
                             <div className="flex gap-6">
                                 {['COD', 'Razorpay'].map(method => (
-                                    <label key={method} className="flex items-center gap-2 cursor-pointer">
+                                    <label
+                                        key={method}
+                                        className={`flex items-center gap-3 px-6 py-3 border rounded-2xl cursor-pointer transition ${paymentMethod === method
+                                            ? 'border-emerald-600 bg-emerald-50'
+                                            : 'border-gray-200'
+                                            }`}
+                                    >
                                         <input
                                             type="radio"
                                             value={method}
@@ -236,36 +314,40 @@ const Checkout = () => {
 
                     {/* RIGHT SUMMARY */}
                     <div>
-                        <div className="bg-white p-6 rounded-2xl shadow-lg border sticky top-24">
+                        <div className="bg-white p-8 rounded-3xl shadow-2xl border border-emerald-100 sticky top-24">
 
-                            <h2 className="text-lg font-bold mb-4">Order Summary</h2>
+                            <h2 className="text-xl font-bold mb-6">
+                                Order Summary
+                            </h2>
 
-                            {/* Coupon Input */}
+                            {/* Coupon */}
                             <div className="mb-6">
-                                <label className="text-xs font-bold text-gray-500 uppercase">Discount Code</label>
-                                <div className="flex gap-2 mt-1">
+                                <div className="flex gap-2">
                                     <input
                                         type="text"
                                         value={couponCode}
                                         onChange={(e) => setCouponCode(e.target.value)}
-                                        placeholder="ENTER CODE"
-                                        className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm outline-none focus:border-green-500"
+                                        placeholder="Enter coupon"
+                                        className="flex-1 px-4 py-2 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-emerald-500 outline-none"
                                     />
                                     <button
                                         type="button"
                                         onClick={handleApplyCoupon}
-                                        className="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-gray-800"
+                                        className="bg-emerald-700 text-white px-5 py-2 rounded-2xl font-semibold"
                                     >
                                         Apply
                                     </button>
                                 </div>
+
                                 {coupon && (
-                                    <div className="mt-2 text-xs flex justify-between items-center text-green-600 bg-green-50 px-2 py-1 rounded">
-                                        <span>Code <b>{coupon.code}</b> applied</span>
+                                    <div className="mt-3 text-sm flex justify-between items-center bg-emerald-50 text-emerald-700 px-3 py-2 rounded-xl">
+                                        <span>
+                                            Code <b>{coupon.code}</b> applied
+                                        </span>
                                         <button
                                             type="button"
                                             onClick={handleRemoveCoupon}
-                                            className="text-red-500 hover:underline"
+                                            className="text-red-500"
                                         >
                                             Remove
                                         </button>
@@ -273,29 +355,56 @@ const Checkout = () => {
                                 )}
                             </div>
 
-                            <div className="space-y-3 mb-6 text-sm">
-                                <div className="flex justify-between">
-                                    <span>Subtotal</span>
-                                    <span>₹{subtotal.toLocaleString('en-IN')}</span>
+                            {/* Totals */}
+                            <div className="space-y-4 mb-6 text-sm font-medium">
+                                <div className="flex justify-between text-gray-500">
+                                    <span>Total MRP</span>
+                                    <span>₹{totalMRP.toLocaleString('en-IN')}</span>
                                 </div>
 
-                                {totalSavings > 0 && (
-                                    <div className="flex justify-between text-green-600 font-semibold">
-                                        <span>You Saved</span>
-                                        <span>-₹{totalSavings.toLocaleString('en-IN')}</span>
+                                {totalPlatformDiscount > 0 && (
+                                    <div className="flex justify-between text-emerald-600">
+                                        <span>Discount on MRP</span>
+                                        <span>- ₹{totalPlatformDiscount.toLocaleString('en-IN')}</span>
+                                    </div>
+                                )}
+
+                                {totalRoleDiscount > 0 && roleName && (
+                                    <div className="flex justify-between text-emerald-600">
+                                        <span className="flex items-center gap-1">
+                                            {roleName} Discount
+                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse ml-1" title={`${roleName} Verified`} />
+                                        </span>
+                                        <span>- ₹{totalRoleDiscount.toLocaleString('en-IN')}</span>
                                     </div>
                                 )}
 
                                 {coupon && (
-                                    <div className="flex justify-between text-green-600">
-                                        <span>Coupon Discount</span>
-                                        <span>-₹{discountAmount.toLocaleString('en-IN')}</span>
+                                    <div className="flex justify-between text-emerald-600">
+                                        <span>Coupon Savings ({coupon.code})</span>
+                                        <span>- ₹{discountAmount.toLocaleString('en-IN')}</span>
                                     </div>
                                 )}
 
-                                <div className="border-t pt-3 flex justify-between text-lg font-bold">
-                                    <span>Total</span>
-                                    <span className="text-green-700">
+                                <div className="flex justify-between text-gray-500">
+                                    <span>Shipping Fee</span>
+                                    {shippingFee === 0 ? (
+                                        <span className="text-emerald-600 font-bold tracking-widest uppercase text-xs self-end mb-0.5">Free</span>
+                                    ) : (
+                                        <span>+ ₹{shippingFee.toLocaleString('en-IN')}</span>
+                                    )}
+                                </div>
+
+                                <div className="border-t border-gray-100/80 pt-4 flex justify-between items-end">
+                                    <div>
+                                        <span className="block text-gray-900 font-bold text-lg leading-none mb-1">Total Amount</span>
+                                        {totalSavingsBreakdown > 0 && (
+                                            <span className="text-xs text-emerald-600 font-bold tracking-wide">
+                                                You save ₹{totalSavingsBreakdown.toLocaleString('en-IN')}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <span className="text-3xl font-black text-emerald-700 leading-none">
                                         ₹{finalTotal.toLocaleString('en-IN')}
                                     </span>
                                 </div>
@@ -304,12 +413,16 @@ const Checkout = () => {
                             <button
                                 type="submit"
                                 disabled={isCouponLoading}
-                                className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-bold"
+                                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-2xl font-bold text-lg shadow-lg transition"
                             >
                                 {paymentMethod === 'Razorpay'
                                     ? `Pay ₹${finalTotal.toLocaleString('en-IN')}`
                                     : 'Place Order'}
                             </button>
+
+                            <div className="text-xs text-gray-500 mt-4 text-center">
+                                🔐 100% Secure & Encrypted Payment
+                            </div>
                         </div>
                     </div>
                 </form>

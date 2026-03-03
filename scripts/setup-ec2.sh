@@ -51,4 +51,21 @@ kubectl wait --namespace ingress-nginx \
   --selector=app.kubernetes.io/name=ingress-nginx \
   --timeout=300s
 
+# Install cert-manager
+helm repo add jetstack https://charts.jetstack.io
+helm repo update
+
+if ! helm list -n cert-manager | grep -q cert-manager; then
+    helm install cert-manager jetstack/cert-manager \
+      --namespace cert-manager \
+      --create-namespace \
+      --set installCRDs=true
+fi
+
+echo "Waiting for cert-manager..."
+kubectl wait --namespace cert-manager \
+  --for=condition=ready pod \
+  --selector=app.kubernetes.io/instance=cert-manager \
+  --timeout=300s
+
 echo "Setup complete."

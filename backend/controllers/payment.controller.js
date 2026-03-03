@@ -8,7 +8,7 @@ import { asyncHandler } from '../middleware/errorHandler.js';
 // @access  Private
 export const checkout = asyncHandler(async (req, res) => {
     const options = {
-        amount: Number(req.body.amount * 100), // amount in the smallest currency unit
+        amount: Math.round(Number(req.body.amount || 0) * 100), // amount in the smallest currency unit
         currency: "INR",
     };
     const order = await instance.orders.create(options);

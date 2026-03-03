@@ -7,6 +7,8 @@ import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 import connectDB from './config/db.js';
 import dns from 'node:dns';
+import http from 'http';
+import { initSocket } from './config/socket.js';
 import { errorHandler, notFound } from './middleware/errorHandler.js';
 
 // Force DNS to prefer IPv4 (fixes ENETUNREACH issues in some environments)
@@ -23,6 +25,9 @@ import couponRoutes from './routes/coupon.routes.js';
 import uploadRoutes from './routes/upload.routes.js';
 import paymentRoutes from './routes/payment.routes.js';
 import notificationRoutes from './routes/notification.routes.js';
+import chatRoutes from './routes/chat.routes.js';
+import faqRoutes from './routes/faq.routes.js';
+import agentSettlementRoutes from './routes/agentSettlement.routes.js';
 import Razorpay from 'razorpay';
 
 
@@ -50,8 +55,12 @@ if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
 // Initialize express app
 const app = express();
 
-// Security middleware
-app.use(helmet());
+app.use(
+    helmet({
+        contentSecurityPolicy: false,
+        crossOriginEmbedderPolicy: false,
+    })
+);
 
 // CORS configuration
 app.use(
@@ -93,6 +102,9 @@ app.use('/api/coupons', couponRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/chats', chatRoutes);
+app.use('/api/faqs', faqRoutes);
+app.use('/api/settlements', agentSettlementRoutes);
 
 // Health check route
 app.get('/api/health', (req, res) => {
@@ -125,10 +137,16 @@ app.get('/', (req, res) => {
 app.use(notFound);
 app.use(errorHandler);
 
+// Wrap express app with HTTP server
+const httpServer = http.createServer(app);
+
+// Initialize Socket.io
+initSocket(httpServer);
+
 // Start server
 const PORT = process.env.PORT || 5000;
 
-const server = app.listen(PORT, '0.0.0.0', () => {
+const server = httpServer.listen(PORT, '0.0.0.0', () => {
     console.log('');
     console.log('🌿 ═══════════════════════════════════════════════════════');
     console.log('🌿  LCIT Herbal Store - Department of Chemistry');

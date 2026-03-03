@@ -376,6 +376,15 @@ const Coupons = () => {
                                         required
                                     />
 
+                                    <input
+                                        type="number"
+                                        name="perUserLimit"
+                                        value={perUserLimit}
+                                        onChange={onChange}
+                                        placeholder="Per User Limit (0 for Unlimited)"
+                                        className="input"
+                                    />
+
                                     <div className="flex justify-end gap-3">
                                         <button
                                             type="button"

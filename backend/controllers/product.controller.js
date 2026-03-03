@@ -109,10 +109,10 @@ export const getProduct = asyncHandler(async (req, res) => {
         });
     }
 
-    // Increment views
-    product.views += 1;
-    await product.save();
+    // Increment views using findByIdAndUpdate to bypass full document validation
+    await Product.findByIdAndUpdate(req.params.id, { $inc: { views: 1 } });
 
+    // For the response, we can just return the product we already found
     res.status(200).json({
         success: true,
         data: product,

@@ -2,77 +2,157 @@ import React from 'react';
 
 const Terms = () => {
     return (
-        <div className="bg-gray-50 min-h-screen py-12">
+        <div className="min-h-screen bg-gradient-to-b from-stone-50 via-stone-50 to-emerald-50/30 py-16">
             <div className="container-custom mx-auto px-4 max-w-4xl">
-                <div className="bg-white rounded-xl shadow-sm p-8 md:p-12">
-                    <h1 className="text-3xl md:text-4xl font-display font-bold text-gray-900 mb-6">Terms of Service</h1>
-                    <p className="text-gray-500 mb-8">Last updated: {new Date().toLocaleDateString()}</p>
 
-                    <div className="prose prose-green max-w-none text-gray-600">
-                        <section className="mb-8">
-                            <h2 className="text-xl font-bold text-gray-800 mb-4">1. Introduction</h2>
+                <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl shadow-emerald-900/10 border border-emerald-100 p-10 md:p-14">
+
+                    <div className="mb-10">
+                        <h1 className="text-4xl md:text-5xl font-serif font-extrabold text-gray-900 mb-4">
+                            Terms of Service
+                        </h1>
+                        <p className="text-sm text-gray-500">
+                            Last updated: {new Date().toLocaleDateString()}
+                        </p>
+                    </div>
+
+                    <div className="space-y-10 text-gray-700 leading-relaxed">
+
+                        {/* 1 */}
+                        <section>
+                            <h2 className="text-xl font-bold text-emerald-700 mb-4">
+                                1. Introduction
+                            </h2>
                             <p className="mb-4">
-                                Welcome to LCIT Herbal Store ("we," "our," or "us"). By accessing or using our website and services, you agree to be bound by these Terms of Service. If you do not agree to all the terms and conditions, then you may not access the website or use any services.
+                                Welcome to LCIT Herbal Store (“we,” “our,” or “us”). By accessing or using this website,
+                                you agree to comply with and be bound by these Terms of Service.
                             </p>
                             <p>
-                                These services are provided by the Department of Chemistry, LCIT College of Commerce & Science, Bodri, Bilaspur (C.G.).
+                                This platform is operated by the Department of Chemistry,
+                                LCIT College of Commerce & Science, Bodri, Bilaspur (C.G.), India.
                             </p>
                         </section>
 
-                        <section className="mb-8">
-                            <h2 className="text-xl font-bold text-gray-800 mb-4">2. Student & Faculty Verification</h2>
+                        {/* 2 */}
+                        <section>
+                            <h2 className="text-xl font-bold text-emerald-700 mb-4">
+                                2. Student & Faculty Verification
+                            </h2>
                             <p className="mb-4">
-                                Certain discounts and offers are exclusive to verified students and faculty of LCIT. You agree to provide accurate and current information during the verification process. Misrepresentation of your status may result in the suspension of your account and revocation of any discounts obtained fraudulently.
+                                Special pricing and discounts are available only to verified LCIT students and faculty.
+                                You agree to provide accurate information during verification.
+                            </p>
+                            <p>
+                                Any misuse, misrepresentation, or fraudulent claim of eligibility may result in
+                                account suspension and cancellation of associated benefits.
                             </p>
                         </section>
 
-                        <section className="mb-8">
-                            <h2 className="text-xl font-bold text-gray-800 mb-4">3. Products and Services</h2>
+                        {/* 3 */}
+                        <section>
+                            <h2 className="text-xl font-bold text-emerald-700 mb-4">
+                                3. Product Disclaimer
+                            </h2>
                             <p className="mb-4">
-                                All products listed on our store are formulated and prepared by students under faculty supervision. While we strive for quality, these are educational and experimental products.
+                                All products are formulated by students under faculty supervision within an academic
+                                laboratory environment. These products are developed for educational and demonstration purposes.
                             </p>
-                            <ul className="list-disc pl-5 mb-4 space-y-2">
-                                <li>We do not guarantee that the descriptions, prices, or other content are error-free.</li>
-                                <li>We reserve the right to limit the sales of our products to any person, geographic region, or jurisdiction.</li>
-                                <li>We reserve the right to discontinue any product at any time.</li>
+                            <ul className="list-disc pl-6 space-y-2">
+                                <li>We do not claim medical diagnosis, treatment, or cure of any disease.</li>
+                                <li>Users should perform patch tests before topical use.</li>
+                                <li>Consult a healthcare professional for medical conditions.</li>
                             </ul>
                         </section>
 
-                        <section className="mb-8">
-                            <h2 className="text-xl font-bold text-gray-800 mb-4">4. Pricing and Payment</h2>
-                            <p className="mb-4">
-                                Prices for our products are subject to change without notice. We reserve the right at any time to modify or discontinue the Service (or any part or content thereof) without notice at any time.
-                            </p>
-                        </section>
-
-                        <section className="mb-8">
-                            <h2 className="text-xl font-bold text-gray-800 mb-4">5. User Comments and Feedback</h2>
-                            <p className="mb-4">
-                                If you send us creative ideas, suggestions, proposals, plans, or other materials, you agree that we may, at any time, without restriction, edit, copy, publish, distribute, translate and otherwise use in any medium any comments that you forward to us.
-                            </p>
-                        </section>
-
-                        <section className="mb-8">
-                            <h2 className="text-xl font-bold text-gray-800 mb-4">6. Personal Information</h2>
-                            <p className="mb-4">
-                                Your submission of personal information through the store is governed by our Privacy Policy.
-                            </p>
-                        </section>
-
-                        <section className="mb-8">
-                            <h2 className="text-xl font-bold text-gray-800 mb-4">7. Governing Law</h2>
-                            <p className="mb-4">
-                                These Terms of Service and any separate agreements whereby we provide you Services shall be governed by and construed in accordance with the laws of India and the jurisdiction of Bilaspur, Chhattisgarh.
-                            </p>
-                        </section>
-
+                        {/* 4 */}
                         <section>
-                            <h2 className="text-xl font-bold text-gray-800 mb-4">8. Contact Information</h2>
+                            <h2 className="text-xl font-bold text-emerald-700 mb-4">
+                                4. Pricing & Payments
+                            </h2>
+                            <p className="mb-4">
+                                Prices are subject to change without prior notice.
+                                We reserve the right to modify or discontinue products at any time.
+                            </p>
                             <p>
-                                Questions about the Terms of Service should be sent to us at support@lcitherbal.com or visit our Department of Chemistry at LCIT campus.
+                                Payment processing is handled via authorized third-party payment gateways.
                             </p>
                         </section>
+
+                        {/* 5 */}
+                        <section>
+                            <h2 className="text-xl font-bold text-emerald-700 mb-4">
+                                5. Orders & Cancellations
+                            </h2>
+                            <p className="mb-4">
+                                Orders may be cancelled before dispatch. Once shipped, cancellation
+                                may not be possible.
+                            </p>
+                            <p>
+                                We reserve the right to cancel orders due to stock limitations,
+                                pricing errors, or suspected misuse.
+                            </p>
+                        </section>
+
+                        {/* 6 */}
+                        <section>
+                            <h2 className="text-xl font-bold text-emerald-700 mb-4">
+                                6. User Content & Reviews
+                            </h2>
+                            <p>
+                                By submitting feedback, reviews, or comments, you grant us the right to
+                                use, reproduce, and display such content for promotional or informational purposes.
+                            </p>
+                        </section>
+
+                        {/* 7 */}
+                        <section>
+                            <h2 className="text-xl font-bold text-emerald-700 mb-4">
+                                7. Personal Information
+                            </h2>
+                            <p>
+                                Personal data collected through this platform is governed by our Privacy Policy.
+                                We implement reasonable safeguards to protect your data.
+                            </p>
+                        </section>
+
+                        {/* 8 */}
+                        <section>
+                            <h2 className="text-xl font-bold text-emerald-700 mb-4">
+                                8. Limitation of Liability
+                            </h2>
+                            <p>
+                                LCIT Herbal Store shall not be liable for any indirect,
+                                incidental, or consequential damages arising from the use of our products or website.
+                            </p>
+                        </section>
+
+                        {/* 9 */}
+                        <section>
+                            <h2 className="text-xl font-bold text-emerald-700 mb-4">
+                                9. Governing Law
+                            </h2>
+                            <p>
+                                These Terms shall be governed in accordance with the laws of India.
+                                Jurisdiction shall lie exclusively in Bilaspur, Chhattisgarh.
+                            </p>
+                        </section>
+
+                        {/* 10 */}
+                        <section>
+                            <h2 className="text-xl font-bold text-emerald-700 mb-4">
+                                10. Contact Information
+                            </h2>
+                            <p>
+                                For any queries regarding these Terms, please contact:
+                            </p>
+                            <div className="mt-3 bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-sm">
+                                <p><strong>Email:</strong> support@lcitherbal.com</p>
+                                <p><strong>Address:</strong> Department of Chemistry, LCIT College, Bodri, Bilaspur (C.G.), India</p>
+                            </div>
+                        </section>
+
                     </div>
+
                 </div>
             </div>
         </div>

@@ -12,34 +12,52 @@ const AdminNav = () => {
     ];
 
     return (
-        <div className="bg-white shadow-sm border-b mb-8 sticky top-20 z-40">
-            <div className="container-custom">
-                <div className="py-4 border-b border-gray-100 flex justify-between items-center">
+        <div className="bg-white border-b border-gray-200 sticky top-20 z-40 shadow-sm">
+
+            {/* Header Section */}
+            <div className="bg-gradient-to-r from-gray-900 to-gray-800 text-white">
+                <div className="container-custom py-4 flex justify-between items-center">
+
                     <div>
-                        <h2 className="text-xl font-display font-bold text-gray-900">Admin Portal</h2>
-                        <p className="text-xs text-green-600 font-bold uppercase tracking-widest">Department of Chemistry</p>
+                        <h2 className="text-lg font-bold tracking-wide">
+                            Admin Portal
+                        </h2>
+                        <p className="text-[10px] text-emerald-300 uppercase tracking-widest font-semibold">
+                            Department of Chemistry
+                        </p>
                     </div>
-                    <div className="px-3 py-1 bg-green-50 text-green-700 text-xs font-bold rounded-full uppercase tracking-wide">
-                        Authorized Personnel Only
+
+                    <div className="px-3 py-1 bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-[10px] font-bold rounded-full uppercase tracking-widest">
+                        Authorized Access
                     </div>
+
                 </div>
-                <div className="flex space-x-1 overflow-x-auto py-2">
+            </div>
+
+            {/* Navigation Tabs */}
+            <div className="container-custom">
+
+                <div className="flex gap-2 overflow-x-auto py-4 scrollbar-thin scrollbar-thumb-gray-300">
+
                     {navItems.map((item) => (
                         <NavLink
                             key={item.name}
                             to={item.path}
                             className={({ isActive }) =>
-                                `py-2 px-4 rounded-lg font-medium text-sm transition-all whitespace-nowrap ${isActive
-                                    ? 'bg-green-600 text-white shadow-md shadow-green-200'
-                                    : 'text-gray-600 hover:bg-gray-50 hover:text-green-600'
+                                `relative px-5 py-2 text-sm font-semibold rounded-full transition-all whitespace-nowrap ${isActive
+                                    ? 'text-white bg-emerald-600 shadow-lg shadow-emerald-600/30'
+                                    : 'text-gray-600 hover:bg-gray-100 hover:text-emerald-600'
                                 }`
                             }
                         >
                             {item.name}
                         </NavLink>
                     ))}
+
                 </div>
+
             </div>
+
         </div>
     );
 };

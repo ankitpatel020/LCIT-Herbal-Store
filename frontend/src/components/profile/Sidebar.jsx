@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 const Sidebar = ({ activeTab, setActiveTab, user, onLogout, mobile = false }) => {
+
     const menuItems = [
         {
             title: 'My Account',
@@ -30,113 +31,146 @@ const Sidebar = ({ activeTab, setActiveTab, user, onLogout, mobile = false }) =>
     ];
 
     const containerClasses = mobile
-        ? "w-full bg-white border-b border-gray-200 p-4"
-        : "w-full h-[calc(100vh-5rem)] overflow-y-auto bg-white border-r border-gray-200 flex flex-col custom-scrollbar sticky top-20";
+        ? "w-full bg-white p-4"
+        : "w-full h-[calc(100vh-5rem)] overflow-y-auto bg-white border-r border-gray-100 flex flex-col sticky top-20";
 
     return (
         <div className={containerClasses}>
-            {/* User Profile Highlight */}
-            <div className={`flex items-center gap-4 ${mobile ? 'mb-6' : 'p-6 border-b border-gray-50 bg-gradient-to-r from-green-50/50 to-transparent'}`}>
-                <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-green-600 text-xl font-bold border-2 border-green-100 shadow-sm shrink-0">
+
+            {/* User Header */}
+            <div className={`flex items-center gap-4 ${mobile ? 'mb-6' : 'p-6 border-b border-gray-50 bg-gradient-to-r from-emerald-50/60 to-transparent'}`}>
+                <div className="w-12 h-12 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold shadow-md">
                     {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
                 </div>
-                <div className="flex-1 min-w-0">
-                    <p className="text-xs text-green-600 font-bold uppercase tracking-wider mb-0.5">Welcome,</p>
-                    <h3 className="font-bold text-gray-900 truncate text-base">{user?.name}</h3>
+                <div className="min-w-0">
+                    <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-widest">
+                        Welcome
+                    </p>
+                    <h3 className="font-semibold text-gray-900 truncate">
+                        {user?.name}
+                    </h3>
                 </div>
             </div>
 
             {/* Navigation */}
-            <nav className={`space-y-8 ${mobile ? 'grid grid-cols-1 gap-6 space-y-0' : 'flex-1 p-6'}`}>
+            <nav className={`${mobile ? 'space-y-6' : 'flex-1 p-6 space-y-8'}`}>
+
                 {menuItems.map((section, idx) => (
                     <div key={idx}>
-                        <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 px-2">
+                        <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 px-2">
                             {section.title}
                         </h4>
+
                         <ul className="space-y-1">
                             {section.items.map((item, itemIdx) => {
                                 const isActive = activeTab === item.id;
+
                                 return (
                                     <li key={itemIdx}>
                                         <button
                                             onClick={() => setActiveTab(item.id)}
-                                            className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 flex items-center gap-3 relative overflow-hidden group
+                                            className={`
+                                                w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all relative
                                                 ${isActive
                                                     ? item.danger
-                                                        ? 'bg-red-50 text-red-600 shadow-sm ring-1 ring-red-100'
-                                                        : 'bg-green-600 text-white shadow-md shadow-green-200'
+                                                        ? 'bg-red-50 text-red-600'
+                                                        : 'bg-emerald-50 text-emerald-700'
                                                     : item.danger
                                                         ? 'text-gray-600 hover:bg-red-50 hover:text-red-600'
                                                         : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                                                }`}
+                                                }
+                                            `}
                                         >
-                                            <span className={`text-lg transition-transform group-hover:scale-110 ${isActive ? 'text-white' : 'opacity-70'} ${item.danger && !isActive ? 'text-red-500' : ''}`}>
+                                            {/* Left Accent Bar */}
+                                            {isActive && (
+                                                <span className={`absolute left-0 top-0 bottom-0 w-1 rounded-r-full 
+                                                    ${item.danger ? 'bg-red-500' : 'bg-emerald-500'}
+                                                `} />
+                                            )}
+
+                                            <span className={`text-lg ${item.danger && !isActive ? 'text-red-500' : ''}`}>
                                                 {item.icon}
                                             </span>
-                                            <span className="relative z-10">{item.label}</span>
+
+                                            <span>{item.label}</span>
                                         </button>
                                     </li>
                                 );
                             })}
+
                             {/* Admin Dashboard */}
                             {section.title === 'My Account' && user?.role === 'admin' && (
                                 <li>
                                     <Link
                                         to="/admin/dashboard"
-                                        className="w-full text-left px-3 py-2.5 rounded-xl text-sm font-medium text-purple-600 hover:bg-purple-50 flex items-center gap-3 transition-colors"
+                                        className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-purple-600 hover:bg-purple-50 transition"
                                     >
-                                        <span className="text-lg opacity-80">⚡</span>
-                                        Admin Dashboard
+                                        ⚡ Admin Dashboard
                                     </Link>
                                 </li>
                             )}
+
                             {/* Agent Dashboard */}
                             {section.title === 'My Account' && user?.role === 'agent' && (
                                 <li>
                                     <Link
                                         to="/agent/dashboard"
-                                        className="w-full text-left px-3 py-2.5 rounded-xl text-sm font-medium text-blue-600 hover:bg-blue-50 flex items-center gap-3 transition-colors"
+                                        className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-blue-600 hover:bg-blue-50 transition"
                                     >
-                                        <span className="text-lg opacity-80">🛡️</span>
-                                        Agent Dashboard
+                                        🛡️ Agent Dashboard
+                                    </Link>
+                                </li>
+                            )}
+
+                            {/* Support Inbox */}
+                            {section.title === 'My Account' && ['admin', 'agent', 'support'].includes(user?.role) && (
+                                <li>
+                                    <Link
+                                        to="/support/chat"
+                                        className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-emerald-600 hover:bg-emerald-50 transition"
+                                    >
+                                        💬 Support Inbox
                                     </Link>
                                 </li>
                             )}
                         </ul>
                     </div>
                 ))}
+
             </nav>
 
-            {/* Footer Actions */}
+            {/* Footer */}
             {!mobile && (
-                <div className="p-4 border-t border-gray-50 bg-gray-50/30">
+                <div className="p-4 border-t border-gray-50 bg-gray-50/40">
                     <button
                         onClick={onLogout}
-                        className="w-full text-left px-3 py-2.5 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition-all duration-200 flex items-center gap-3"
+                        className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition"
                     >
-                        <span className="text-lg opacity-80">🚪</span>
-                        Log Out
+                        🚪 Log Out
                     </button>
+
                     <Link
                         to="/help-center"
-                        className="w-full text-left px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 transition-all duration-200 flex items-center gap-3 mt-1"
+                        className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-gray-500 hover:bg-gray-100 mt-2 transition"
                     >
-                        <span className="text-lg opacity-80">🎧</span>
-                        Help Center
+                        🎧 Help Center
                     </Link>
                 </div>
             )}
-            {/* Mobile specific logout */}
+
             {mobile && (
                 <div className="mt-6 pt-6 border-t border-gray-100">
-                    <button onClick={onLogout} className="text-red-600 font-bold text-sm flex items-center gap-2">
-                        <span>🚪</span> Log Out
+                    <button
+                        onClick={onLogout}
+                        className="text-red-600 font-semibold text-sm flex items-center gap-2"
+                    >
+                        🚪 Log Out
                     </button>
                 </div>
             )}
+
         </div>
     );
 };
 
 export default Sidebar;
-

@@ -170,6 +170,9 @@ couponSchema.methods.isValid = function () {
    METHOD: Per-user usage
 ================================ */
 couponSchema.methods.canUserUse = function (userId) {
+    // If perUserLimit is 0 or null, treat as unlimited
+    if (!this.perUserLimit) return true;
+
     const usage = this.usedBy.find(
         (u) => u.user.toString() === userId.toString()
     );

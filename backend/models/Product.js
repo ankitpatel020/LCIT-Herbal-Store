@@ -47,6 +47,8 @@ const productSchema = new mongoose.Schema(
                 'Herbal Soaps',
                 'Natural Oils',
                 'Ayurvedic Powders',
+                'Herbal Powders',
+                'Herbal Energy Booster Powder',
                 'Face Packs',
                 'Plant Medicines',
                 'Hair Care',

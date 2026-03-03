@@ -6,89 +6,153 @@ import toast from 'react-hot-toast';
 const MyCoupons = () => {
     const [coupons, setCoupons] = useState([]);
     const [loading, setLoading] = useState(true);
+
     const { token } = useSelector((state) => state.auth);
+
+    const API_URL = process.env.REACT_APP_API_URL || '/api';
 
     useEffect(() => {
         const fetchCoupons = async () => {
             try {
-                const config = {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                };
-                const { data } = await axios.get('/api/coupons/available', config);
-                setCoupons(data.data);
+                const authToken = token || localStorage.getItem('token');
+                if (!authToken) throw new Error('Unauthorized');
+
+                const { data } = await axios.get(
+                    `${API_URL}/coupons/available`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${authToken}`,
+                        },
+                    }
+                );
+
+                setCoupons(data?.data || []);
             } catch (error) {
                 console.error(error);
-                toast.error('Failed to fetch coupons');
+                toast.error(
+                    error.response?.data?.message || 'Failed to fetch coupons'
+                );
             } finally {
                 setLoading(false);
             }
         };
 
-        if (token) {
-            fetchCoupons();
-        }
-    }, [token]);
+        fetchCoupons();
+    }, [token, API_URL]);
 
-    const copyToClipboard = (code) => {
-        navigator.clipboard.writeText(code);
-        toast.success('Coupon code copied!');
+    const copyToClipboard = async (code) => {
+        try {
+            if (navigator.clipboard) {
+                await navigator.clipboard.writeText(code);
+            } else {
+                const temp = document.createElement('textarea');
+                temp.value = code;
+                document.body.appendChild(temp);
+                temp.select();
+                document.execCommand('copy');
+                document.body.removeChild(temp);
+            }
+            toast.success('Coupon code copied!');
+        } catch (error) {
+            toast.error('Failed to copy code');
+        }
     };
 
     if (loading) {
         return (
             <div className="flex justify-center items-center h-64">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+                <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-green-600"></div>
             </div>
         );
     }
 
     return (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-6">My Coupons</h2>
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 relative overflow-hidden">
+
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-green-400 to-green-600"></div>
+
+            <h2 className="text-2xl font-bold text-gray-900 mb-8">
+                My Coupons
+            </h2>
 
             {coupons.length === 0 ? (
-                <div className="text-center py-12 text-gray-500">
-                    <svg className="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
-                    </svg>
-                    <p>No coupons available for you at the moment.</p>
+                <div className="text-center py-16 text-gray-500">
+                    <div className="text-5xl mb-4">🎟️</div>
+                    <p className="text-sm">
+                        No coupons available right now.
+                    </p>
                 </div>
             ) : (
                 <div className="grid gap-6 md:grid-cols-2">
-                    {coupons.map((coupon) => (
-                        <div key={coupon._id} className="border border-green-200 bg-green-50 rounded-lg p-5 relative overflow-hidden group hover:shadow-md transition-shadow">
-                            <div className="absolute top-0 right-0 w-16 h-16 bg-green-100 rounded-bl-full -mr-8 -mt-8 z-0"></div>
+                    {coupons.map((coupon) => {
+                        const isExpired =
+                            new Date(coupon.expiryDate) < new Date();
 
-                            <div className="relative z-10">
+                        return (
+                            <div
+                                key={coupon._id}
+                                className={`relative rounded-2xl p-6 border transition-all hover:shadow-lg ${isExpired
+                                    ? 'bg-gray-100 border-gray-300 opacity-70'
+                                    : 'bg-green-50 border-green-200'
+                                    }`}
+                            >
+                                {/* Expired Badge */}
+                                {isExpired && (
+                                    <span className="absolute top-4 right-4 text-xs font-bold bg-red-100 text-red-600 px-2 py-1 rounded-full">
+                                        Expired
+                                    </span>
+                                )}
+
                                 <div className="flex justify-between items-start mb-4">
                                     <div>
-                                        <span className={`inline-block px-2 py-1 text-xs font-bold rounded mb-2 ${coupon.discountType === 'percentage' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}`}>
-                                            {coupon.discountType === 'percentage' ? `${coupon.discountValue}% OFF` : `₹${coupon.discountValue} OFF`}
+                                        <span
+                                            className={`inline-block px-3 py-1 text-xs font-bold rounded-full mb-2 ${coupon.discountType === 'percentage'
+                                                ? 'bg-blue-100 text-blue-700'
+                                                : 'bg-green-100 text-green-700'
+                                                }`}
+                                        >
+                                            {coupon.discountType === 'percentage'
+                                                ? `${coupon.discountValue}% OFF`
+                                                : `₹${coupon.discountValue} OFF`}
                                         </span>
-                                        <h3 className="font-bold text-lg text-gray-800 tracking-wide">{coupon.code}</h3>
+
+                                        <h3 className="font-bold text-lg text-gray-900 tracking-wider">
+                                            {coupon.code}
+                                        </h3>
                                     </div>
-                                    <button
-                                        onClick={() => copyToClipboard(coupon.code)}
-                                        className="text-gray-400 hover:text-green-600 transition-colors"
-                                        title="Copy Code"
-                                    >
-                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                                        </svg>
-                                    </button>
+
+                                    {!isExpired && (
+                                        <button
+                                            onClick={() =>
+                                                copyToClipboard(coupon.code)
+                                            }
+                                            className="text-gray-400 hover:text-green-600 transition"
+                                            title="Copy Code"
+                                        >
+                                            📋
+                                        </button>
+                                    )}
                                 </div>
 
-                                <p className="text-gray-600 text-sm mb-4 line-clamp-2">{coupon.description}</p>
+                                <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                                    {coupon.description}
+                                </p>
 
-                                <div className="flex items-center justify-between text-xs text-gray-500 border-t border-green-200 pt-3">
-                                    <span>Min. spend: ₹{coupon.minOrderAmount}</span>
-                                    <span>Expires: {new Date(coupon.expiryDate).toLocaleDateString()}</span>
+                                <div className="flex justify-between text-xs text-gray-500 border-t pt-3">
+                                    <span>
+                                        Min. spend: ₹
+                                        {coupon.minOrderAmount || 0}
+                                    </span>
+                                    <span>
+                                        Expires:{' '}
+                                        {new Date(
+                                            coupon.expiryDate
+                                        ).toLocaleDateString()}
+                                    </span>
                                 </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             )}
         </div>

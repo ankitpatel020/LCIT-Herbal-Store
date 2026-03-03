@@ -2,6 +2,7 @@ import Order from '../models/Order.js';
 import Product from '../models/Product.js';
 import Coupon from '../models/Coupon.js';
 import { asyncHandler } from '../middleware/errorHandler.js';
+import { getIO } from '../config/socket.js';
 
 // @desc    Create new order
 // @route   POST /api/orders
@@ -95,6 +96,8 @@ export const createOrder = asyncHandler(async (req, res) => {
         }
     }
 
+    const finalCalculatedTotal = itemsPrice + taxPrice + shippingPrice - discountAmount;
+
     const order = await Order.create({
         user: req.user.id,
         orderItems,
@@ -105,7 +108,7 @@ export const createOrder = asyncHandler(async (req, res) => {
         shippingPrice,
         discountAmount,
         couponApplied,
-        totalPrice: totalPrice - discountAmount,
+        totalPrice: finalCalculatedTotal,
     });
 
     // Update product stock and sold count
@@ -113,6 +116,18 @@ export const createOrder = asyncHandler(async (req, res) => {
         await Product.findByIdAndUpdate(item.product, {
             $inc: { stock: -item.quantity, soldCount: item.quantity },
         });
+    }
+
+    // Emit new order event to admin and agent rooms
+    try {
+        const io = getIO();
+        io.to('admin_room').emit('newOrder', {
+            orderId: order._id,
+            totalPrice: order.totalPrice,
+            message: `New order #${order._id.toString().substring(0, 8)} placed!`,
+        });
+    } catch (err) {
+        console.error('Socket error emitting newOrder:', err);
     }
 
     res.status(201).json({
@@ -176,7 +191,7 @@ export const getOrderById = asyncHandler(async (req, res) => {
 export const getInvoice = asyncHandler(async (req, res) => {
     const order = await Order.findById(req.params.id)
         .populate('user', 'name email phone')
-        .populate('orderItems.product', 'name images price');
+        .populate('orderItems.product', 'name images price originalPrice regularPrice hsnCode sacCode');
 
     if (!order) {
         return res.status(404).json({
@@ -232,6 +247,18 @@ export const updateOrderToPaid = asyncHandler(async (req, res) => {
     };
 
     const updatedOrder = await order.save();
+
+    // Emit event to user
+    try {
+        const io = getIO();
+        io.to(`user_${order.user.toString()}`).emit('orderStatusUpdated', {
+            orderId: order._id,
+            status: 'Paid',
+            message: `Your order #${order._id.toString().substring(0, 8)} has been marked as paid.`,
+        });
+    } catch (err) {
+        console.error('Socket error emitting orderStatusUpdated:', err);
+    }
 
     res.status(200).json({
         success: true,
@@ -308,6 +335,18 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
     if (status === 'Delivered') {
         order.isDelivered = true;
         order.deliveredAt = Date.now();
+
+        // Calculate Agent Commission if the user is an agent
+        if (req.user.role === 'agent') {
+            // Assign the agent to the order if not already assigned
+            if (!order.agent) {
+                order.agent = req.user._id;
+            }
+            // Use the agent's specific commission rate or fallback to default
+            const commissionRate = req.user.commissionRate || 0.1;
+            order.agentCommission = order.totalPrice * commissionRate;
+            order.commissionStatus = 'pending';
+        }
     }
 
     // Add to status history
@@ -319,6 +358,18 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
     });
 
     const updatedOrder = await order.save();
+
+    // Emit event to user
+    try {
+        const io = getIO();
+        io.to(`user_${order.user.toString()}`).emit('orderStatusUpdated', {
+            orderId: order._id,
+            status: updatedOrder.orderStatus,
+            message: `Your order #${order._id.toString().substring(0, 8)} status is now: ${updatedOrder.orderStatus}`,
+        });
+    } catch (err) {
+        console.error('Socket error emitting orderStatusUpdated:', err);
+    }
 
     res.status(200).json({
         success: true,
@@ -370,7 +421,39 @@ export const cancelOrder = asyncHandler(async (req, res) => {
         });
     }
 
+    // Refund coupon usages if an active coupon was tied to the order
+    if (order.couponApplied && order.couponApplied.coupon) {
+        const couponToRefund = await Coupon.findById(order.couponApplied.coupon);
+        if (couponToRefund) {
+            const userUsage = couponToRefund.usedBy.find(
+                (u) => u.user.toString() === order.user.toString()
+            );
+
+            if (userUsage && userUsage.usedCount > 0) {
+                userUsage.usedCount -= 1;
+            }
+
+            if (couponToRefund.usageCount > 0) {
+                couponToRefund.usageCount -= 1;
+            }
+
+            await couponToRefund.save();
+        }
+    }
+
     const updatedOrder = await order.save();
+
+    // Emit event to user
+    try {
+        const io = getIO();
+        io.to(`user_${order.user.toString()}`).emit('orderStatusUpdated', {
+            orderId: order._id,
+            status: 'Cancelled',
+            message: `Your order #${order._id.toString().substring(0, 8)} has been cancelled.`,
+        });
+    } catch (err) {
+        console.error('Socket error emitting orderStatusUpdated:', err);
+    }
 
     res.status(200).json({
         success: true,

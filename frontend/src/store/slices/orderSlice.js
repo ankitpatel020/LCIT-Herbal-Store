@@ -218,6 +218,22 @@ const orderSlice = createSlice({
         clearOrder: (state) => {
             state.order = null;
         },
+        updateOrderFromSocket: (state, action) => {
+            const { orderId, status } = action.payload;
+
+            // Update single order view if it matches
+            if (state.order && state.order._id === orderId) {
+                state.order.orderStatus = status;
+            }
+
+            // Update in orders list if present
+            if (state.orders && state.orders.length > 0) {
+                const orderIndex = state.orders.findIndex((o) => o._id === orderId);
+                if (orderIndex !== -1) {
+                    state.orders[orderIndex].orderStatus = status;
+                }
+            }
+        },
     },
     extraReducers: (builder) => {
         builder
@@ -359,5 +375,5 @@ const orderSlice = createSlice({
     },
 });
 
-export const { reset, clearOrder } = orderSlice.actions;
+export const { reset, clearOrder, updateOrderFromSocket } = orderSlice.actions;
 export default orderSlice.reducer;

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { addToCart } from '../store/slices/cartSlice';
 import toast from 'react-hot-toast';
+import { FiShoppingCart, FiStar, FiHeart, FiEye } from 'react-icons/fi';
 
 const ProductCard = ({ product }) => {
     const dispatch = useDispatch();
@@ -14,61 +15,54 @@ const ProductCard = ({ product }) => {
         product?.images?.[0]?.url ||
         product?.images?.[0] ||
         product?.image ||
-        'https://placehold.co/300?text=LCIT+Herbal';
+        'https://placehold.co/400x400?text=LCIT+Herbal';
 
     /* ===============================
-       STABLE PRICING CALCULATION
+       PRICING LOGIC
     =============================== */
-    const { finalPrice, referencePrice, discountPercent, discountSource } =
-        useMemo(() => {
-            if (!product) return {
+    const { finalPrice, referencePrice, discountPercent, discountSource } = useMemo(() => {
+        if (!product)
+            return {
                 finalPrice: 0,
                 referencePrice: 0,
                 discountPercent: 0,
-                discountSource: null
+                discountSource: null,
             };
 
-            const basePrice = Number(product.price) || 0;
-            const mrp = Number(product.originalPrice) || basePrice;
+        const basePrice = Number(product.price) || 0;
+        const mrp = Number(product.originalPrice) || basePrice;
 
-            let priceAfterUserDiscount = basePrice;
-            let source = null;
+        let priceAfterUserDiscount = basePrice;
+        let source = null;
 
-            if (user?.isLCITFaculty) {
-                const disc = product.facultyDiscount ?? 50;
-                priceAfterUserDiscount =
-                    basePrice - (basePrice * disc) / 100;
-                source = 'Faculty';
-            } else if (user?.isLCITStudent) {
-                const disc = product.studentDiscount ?? 25;
-                priceAfterUserDiscount =
-                    basePrice - (basePrice * disc) / 100;
-                source = 'Student';
-            }
+        if (user?.isLCITFaculty) {
+            const disc = product.facultyDiscount ?? 50;
+            priceAfterUserDiscount = basePrice - (basePrice * disc) / 100;
+            source = 'Faculty';
+        } else if (user?.isLCITStudent) {
+            const disc = product.studentDiscount ?? 25;
+            priceAfterUserDiscount = basePrice - (basePrice * disc) / 100;
+            source = 'Student';
+        }
 
-            const reference = mrp > basePrice ? mrp : basePrice;
+        const reference = mrp > basePrice ? mrp : basePrice;
 
-            const percent =
-                reference > priceAfterUserDiscount
-                    ? Math.round(
-                        ((reference - priceAfterUserDiscount) / reference) *
-                        100
-                    )
-                    : 0;
+        const percent =
+            reference > priceAfterUserDiscount
+                ? Math.round(((reference - priceAfterUserDiscount) / reference) * 100)
+                : 0;
 
-            return {
-                finalPrice: Math.max(priceAfterUserDiscount, 0),
-                referencePrice: reference,
-                discountPercent: percent,
-                discountSource: source,
-            };
-        }, [product, user]);
+        return {
+            finalPrice: Math.max(priceAfterUserDiscount, 0),
+            referencePrice: reference,
+            discountPercent: percent,
+            discountSource: source,
+        };
+    }, [product, user]);
 
-    /* ===============================
-       ADD TO CART
-    =============================== */
     const handleAddToCart = (e) => {
         e.preventDefault();
+        e.stopPropagation();
 
         if (!inStock) return toast.error('Out of stock');
 
@@ -82,120 +76,117 @@ const ProductCard = ({ product }) => {
             })
         );
 
-        toast.success('Added to cart');
+        toast.success('Added to cart 🌿');
     };
 
     if (!product) return null;
 
     return (
-        <div className="group bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col h-full relative">
+        <div className="group flex flex-col bg-white rounded-3xl border border-gray-100/80 shadow-[0_2px_20px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgba(16,185,129,0.12)] transition-all duration-500 overflow-hidden relative h-full">
 
             {/* BADGES */}
-            <div className="absolute top-3 left-3 z-10 flex flex-col gap-2">
+            <div className="absolute top-4 left-4 z-20 flex flex-col gap-2">
                 {discountPercent > 0 && (
-                    <span className="bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-md shadow-sm">
-                        🔥 {discountPercent}% OFF
+                    <span className="bg-emerald-500 text-white text-[11px] font-bold tracking-wider uppercase px-3 py-1.5 rounded-full shadow-md backdrop-blur-md">
+                        {discountPercent}% OFF
                     </span>
                 )}
-
-                {discountSource && (
-                    <span
-                        className={`text-xs font-bold px-3 py-1 rounded-full shadow-sm ${discountSource === 'Faculty'
-                            ? 'bg-blue-500 text-white'
-                            : 'bg-green-500 text-white'
-                            }`}
-                    >
-                        {discountSource}
+                {!inStock && (
+                    <span className="bg-red-500/90 text-white text-[11px] font-bold tracking-wider uppercase px-3 py-1.5 rounded-full shadow-md backdrop-blur-md">
+                        Sold Out
                     </span>
                 )}
             </div>
 
-            {!inStock && (
-                <div className="absolute top-3 right-3 z-10">
-                    <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider shadow-sm">
-                        Out of Stock
-                    </span>
-                </div>
-            )}
+            {/* QUICK ACTIONS */}
+            <div className="absolute top-4 right-4 z-20 flex flex-col gap-2 translate-x-12 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300">
+                <button
+                    className="w-10 h-10 bg-white/90 backdrop-blur-sm text-gray-700 hover:text-rose-500 hover:bg-white rounded-full flex items-center justify-center shadow-lg transition-colors duration-200"
+                    title="Add to Wishlist"
+                    onClick={(e) => { e.preventDefault(); toast.success('Added to Wishlist!'); }}
+                >
+                    <FiHeart size={18} className="stroke-2" />
+                </button>
+                <Link
+                    to={`/product/${product._id}`}
+                    className="w-10 h-10 bg-white/90 backdrop-blur-sm text-gray-700 hover:text-emerald-600 hover:bg-white rounded-full flex items-center justify-center shadow-lg transition-colors duration-200"
+                    title="Quick View"
+                >
+                    <FiEye size={18} className="stroke-2" />
+                </Link>
+            </div>
 
-            {/* IMAGE */}
-            <Link
-                to={`/product/${product._id}`}
-                className="block relative pt-[100%] bg-gray-50 overflow-hidden"
-            >
+            {/* IMAGE CONTAINER */}
+            <Link to={`/product/${product._id}`} className="relative block aspect-[4/3] w-full overflow-hidden bg-gray-50 p-6">
+                <div className="absolute inset-0 bg-gradient-to-t from-gray-900/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity z-10" />
                 <img
                     src={imageUrl}
                     alt={product.name}
-                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    className="w-full h-full object-contain mix-blend-multiply group-hover:scale-110 transition-transform duration-700 ease-out"
+                    loading="lazy"
                 />
-
-                {/* RATING BADGE */}
-                <div className="absolute bottom-2 left-2 bg-white/90 backdrop-blur-sm px-2 py-0.5 rounded text-[10px] font-bold text-gray-800 flex items-center gap-0.5 shadow-sm">
-                    {product.ratings?.average || 0}
-                    <svg
-                        className="w-2.5 h-2.5 text-green-600 fill-current"
-                        viewBox="0 0 24 24"
-                    >
-                        <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                    </svg>
-                </div>
             </Link>
 
             {/* CONTENT */}
-            <div className="p-4 flex flex-col flex-grow">
-                <Link
-                    to={`/product/${product._id}`}
-                    className="block mb-2"
-                >
-                    <h3 className="font-bold text-gray-900 group-hover:text-green-600 transition-colors line-clamp-1 text-base">
+            <div className="p-5 flex flex-col flex-grow bg-white z-20">
+
+                {/* CATEGORY & RATING */}
+                <div className="flex justify-between items-center mb-2">
+                    <span className="text-[11px] font-semibold text-emerald-600 tracking-wider uppercase bg-emerald-50 px-2.5 py-1 rounded-md">
+                        {product.category || 'Herbal'}
+                    </span>
+                    <div className="flex items-center gap-1 bg-amber-50 px-2 py-1 rounded-md">
+                        <FiStar className="text-amber-400 fill-amber-400" size={12} />
+                        <span className="text-xs font-bold text-amber-700">
+                            {product.ratings?.average?.toFixed(1) || '0.0'}
+                        </span>
+                    </div>
+                </div>
+
+                {/* TITLE */}
+                <Link to={`/product/${product._id}`} className="mt-1 mb-2 block">
+                    <h3 className="font-bold text-gray-900 text-[17px] leading-snug group-hover:text-emerald-600 transition-colors line-clamp-2">
                         {product.name}
                     </h3>
                 </Link>
 
-                {/* PRICE SECTION */}
-                <div className="mt-auto flex items-end justify-between gap-2">
-                    <div className="flex flex-col">
-
-                        {discountPercent > 0 && (
-                            <span className="text-green-600 text-xs font-bold mb-1">
-                                ↓ {discountPercent}% OFF
+                <div className="mt-auto">
+                    {/* PRICING */}
+                    <div className="flex flex-col gap-0.5 mb-4">
+                        {referencePrice > finalPrice ? (
+                            <div className="flex items-baseline gap-2">
+                                <span className="text-2xl font-extrabold text-gray-900 tracking-tight">
+                                    ₹{finalPrice.toLocaleString('en-IN')}
+                                </span>
+                                <span className="text-sm font-medium text-gray-400 line-through decoration-gray-300">
+                                    ₹{referencePrice.toLocaleString('en-IN')}
+                                </span>
+                            </div>
+                        ) : (
+                            <span className="text-2xl font-extrabold text-gray-900 tracking-tight">
+                                ₹{finalPrice.toLocaleString('en-IN')}
                             </span>
                         )}
 
-                        <div className="flex items-center gap-2">
-                            {referencePrice > finalPrice && (
-                                <span className="text-gray-400 line-through text-sm font-semibold">
-                                    ₹{referencePrice.toLocaleString('en-IN')}
-                                </span>
-                            )}
-
-                            <span className="text-lg font-bold text-gray-900">
-                                ₹{finalPrice.toLocaleString('en-IN')}
+                        {discountSource && (
+                            <span className="text-[11px] font-medium text-emerald-600 flex items-center gap-1 mt-0.5">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                {discountSource} Price Applied
                             </span>
-                        </div>
+                        )}
                     </div>
 
+                    {/* ADD TO CART BUTTON */}
                     <button
                         onClick={handleAddToCart}
                         disabled={!inStock}
-                        className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${inStock
-                            ? 'bg-green-600 text-white hover:bg-green-700 shadow-md hover:shadow-lg hover:scale-105'
-                            : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        className={`w-full py-3.5 rounded-2xl font-semibold flex items-center justify-center gap-2 transition-all duration-300 active:scale-[0.98] ${inStock
+                                ? 'bg-gray-900 text-white hover:bg-emerald-600 hover:shadow-[0_8px_20px_rgba(16,185,129,0.3)] shadow-[0_4px_14px_rgba(0,0,0,0.1)]'
+                                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                             }`}
                     >
-                        <svg
-                            className="w-5 h-5"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                            />
-                        </svg>
+                        <FiShoppingCart size={18} className={inStock ? "group-hover:animate-bounce" : ""} />
+                        {inStock ? 'Add to Cart' : 'Out of Stock'}
                     </button>
                 </div>
             </div>

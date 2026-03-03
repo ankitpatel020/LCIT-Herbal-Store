@@ -7,6 +7,8 @@ import userReducer from './slices/userSlice';
 import reviewReducer from './slices/reviewSlice';
 import analyticsReducer from './slices/analyticsSlice';
 import couponReducer from './slices/couponSlice';
+import faqReducer from './slices/faqSlice';
+import agentSettlementReducer from './slices/agentSettlementSlice';
 
 const store = configureStore({
     reducer: {
@@ -18,6 +20,8 @@ const store = configureStore({
         reviews: reviewReducer,
         analytics: analyticsReducer,
         coupons: couponReducer,
+        faqs: faqReducer,
+        agentSettlement: agentSettlementReducer,
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({

@@ -5,7 +5,7 @@ const API_URL = process.env.REACT_APP_API_URL || '/api';
 
 // Get user from localStorage
 const user = JSON.parse(localStorage.getItem('user'));
-const token = localStorage.getItem('token');
+const token = localStorage.getItem('token') || (user && user.token ? user.token : null);
 
 const initialState = {
     user: user ? user : null,
@@ -175,6 +175,36 @@ export const loadUser = createAsyncThunk('auth/loadUser', async (_, thunkAPI) =>
     }
 });
 
+// Forgot Password
+export const forgotPassword = createAsyncThunk(
+    'auth/forgotPassword',
+    async (email, thunkAPI) => {
+        try {
+            const response = await axios.post(`${API_URL}/auth/forgotpassword`, { email });
+            return response.data;
+        } catch (error) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to send reset email';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
+// Reset Password
+export const resetPassword = createAsyncThunk(
+    'auth/resetPassword',
+    async ({ token, password }, thunkAPI) => {
+        try {
+            const response = await axios.put(`${API_URL}/auth/resetpassword/${token}`, { password });
+            return response.data;
+        } catch (error) {
+            const message =
+                error.response?.data?.message || error.message || 'Failed to reset password';
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
 const authSlice = createSlice({
     name: 'auth',
     initialState,
@@ -266,6 +296,34 @@ const authSlice = createSlice({
             .addCase(loadUser.fulfilled, (state, action) => {
                 state.isLoading = false;
                 state.user = action.payload.data;
+            })
+            // Forgot Password
+            .addCase(forgotPassword.pending, (state) => {
+                state.isLoading = true;
+            })
+            .addCase(forgotPassword.fulfilled, (state, action) => {
+                state.isLoading = false;
+                state.isSuccess = true;
+                state.message = action.payload.message || 'Email sent successfully';
+            })
+            .addCase(forgotPassword.rejected, (state, action) => {
+                state.isLoading = false;
+                state.isError = true;
+                state.message = action.payload;
+            })
+            // Reset Password
+            .addCase(resetPassword.pending, (state) => {
+                state.isLoading = true;
+            })
+            .addCase(resetPassword.fulfilled, (state, action) => {
+                state.isLoading = false;
+                state.isSuccess = true;
+                state.message = action.payload.message || 'Password reset successfully';
+            })
+            .addCase(resetPassword.rejected, (state, action) => {
+                state.isLoading = false;
+                state.isError = true;
+                state.message = action.payload;
             });
     },
 });

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { getProduct, reset } from '../store/slices/productSlice';
 import { addToCart } from '../store/slices/cartSlice';
@@ -10,6 +10,7 @@ import toast from 'react-hot-toast';
 
 const ProductDetails = () => {
     const { id } = useParams();
+    const navigate = useNavigate();
     const dispatch = useDispatch();
 
     const { product, isLoading, isError, message } = useSelector((state) => state.products);
@@ -17,14 +18,11 @@ const ProductDetails = () => {
     const { reviews: productReviews } = useSelector((state) => state.reviews);
     const { orders } = useSelector((state) => state.orders);
 
-    const [qty] = useState(1); // Default to 1 if selector removed
     const [selectedImage, setSelectedImage] = useState('');
     const [canReview, setCanReview] = useState(false);
     const [activeTab, setActiveTab] = useState('description');
 
-    /* ===============================
-       FETCH DATA
-    =============================== */
+    /* FETCH */
     useEffect(() => {
         dispatch(getProduct(id));
         dispatch(getProductReviews(id));
@@ -36,9 +34,6 @@ const ProductDetails = () => {
         };
     }, [dispatch, id, user]);
 
-    /* ===============================
-       SET DEFAULT IMAGE
-    =============================== */
     useEffect(() => {
         if (product?.images?.length > 0) {
             setSelectedImage(product.images[0]?.url || product.images[0]);
@@ -47,9 +42,7 @@ const ProductDetails = () => {
         }
     }, [product]);
 
-    /* ===============================
-       CHECK REVIEW ELIGIBILITY
-    =============================== */
+    /* REVIEW ELIGIBILITY */
     useEffect(() => {
         if (!user || !orders?.length) return setCanReview(false);
 
@@ -63,148 +56,98 @@ const ProductDetails = () => {
         setCanReview(hasPurchased);
     }, [user, orders, id]);
 
-    /* ===============================
-       RATING
-    =============================== */
-    const averageRating = useMemo(
-        () => Number(product?.ratings?.average) || 0,
-        [product]
-    );
-
-    const reviewCount = product?.ratings?.count || 0;
-
-    const renderStars = (rating) => (
-        <div className="flex gap-1 text-yellow-400">
-            {[1, 2, 3, 4, 5].map(star => (
-                <svg
-                    key={star}
-                    className={`w-5 h-5 ${star <= Math.round(rating)
-                        ? 'fill-current'
-                        : 'text-gray-300'
-                        }`}
-                    viewBox="0 0 24 24"
-                >
-                    <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                </svg>
-            ))}
-        </div>
-    );
-
-    /* ===============================
-       PRICING LOGIC
-    =============================== */
-    const {
-        finalPrice,
-        referencePrice,
-        discountPercent,
-        savings,
-    } = useMemo(() => {
-        if (!product) {
-            return {
-                finalPrice: 0,
-                referencePrice: 0,
-                discountPercent: 0,
-                discountSource: null,
-                savings: 0,
-            };
-        }
+    /* PRICING */
+    const { finalPrice, referencePrice, discountPercent, savings } = useMemo(() => {
+        if (!product) return { finalPrice: 0, referencePrice: 0, discountPercent: 0, savings: 0 };
 
         const basePrice = Number(product.price) || 0;
         const mrp = Number(product.originalPrice) || basePrice;
 
-        let priceAfterUserDiscount = basePrice;
-        let source = null;
+        let priceAfterDiscount = basePrice;
 
         if (user?.isLCITFaculty) {
             const disc = product.facultyDiscount ?? 50;
-            priceAfterUserDiscount =
-                basePrice - (basePrice * disc) / 100;
-            source = 'Faculty';
+            priceAfterDiscount = basePrice - (basePrice * disc) / 100;
         } else if (user?.isLCITStudent) {
             const disc = product.studentDiscount ?? 25;
-            priceAfterUserDiscount =
-                basePrice - (basePrice * disc) / 100;
-            source = 'Student';
+            priceAfterDiscount = basePrice - (basePrice * disc) / 100;
         }
 
         const reference = mrp > basePrice ? mrp : basePrice;
-
         const percent =
-            reference > priceAfterUserDiscount
-                ? Math.round(
-                    ((reference - priceAfterUserDiscount) / reference) * 100
-                )
-                : 0;
-
-        const saved =
-            reference > priceAfterUserDiscount
-                ? reference - priceAfterUserDiscount
+            reference > priceAfterDiscount
+                ? Math.round(((reference - priceAfterDiscount) / reference) * 100)
                 : 0;
 
         return {
-            finalPrice: Math.max(priceAfterUserDiscount, 0),
+            finalPrice: priceAfterDiscount,
             referencePrice: reference,
             discountPercent: percent,
-            discountSource: source,
-            savings: saved,
+            savings: reference - priceAfterDiscount,
         };
     }, [product, user]);
 
-    /* ===============================
-       ADD TO CART
-    =============================== */
     const handleAddToCart = () => {
-        if (product?.stock <= 0)
-            return toast.error('Out of Stock');
+        if (product?.stock <= 0) return toast.error('Out of Stock');
 
         dispatch(
             addToCart({
                 ...product,
                 price: finalPrice,
-                quantity: Number(qty),
+                quantity: 1,
                 originalPrice: referencePrice,
-                savings,
+                regularPrice: product.price,
             })
         );
 
-        toast.success('Added to Cart');
+        toast.success('Added to Cart 🌿');
     };
 
-    /* ===============================
-       LOADING & ERROR
-    =============================== */
+    const handleBuyNow = () => {
+        if (product?.stock <= 0) return toast.error('Out of Stock');
+
+        dispatch(
+            addToCart({
+                ...product,
+                price: finalPrice,
+                quantity: 1,
+                originalPrice: referencePrice,
+                regularPrice: product.price,
+            })
+        );
+
+        navigate('/checkout');
+    };
+
     if (isLoading)
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-600"></div>
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-stone-50 to-emerald-50/30">
+                <div className="animate-spin h-14 w-14 border-t-2 border-b-2 border-emerald-600 rounded-full"></div>
             </div>
         );
 
     if (isError)
-        return (
-            <div className="text-center py-20 text-red-600">
-                Error: {message}
-            </div>
-        );
+        return <div className="text-center py-20 text-red-600">Error: {message}</div>;
 
     if (!product) return null;
 
-    /* ===============================
-       UI
-    =============================== */
-    return (
-        <div className="bg-gray-50 min-h-screen pb-20">
-            <div className="container-custom py-12">
+    const averageRating = Number(product?.ratings?.average) || 0;
+    const reviewCount = product?.ratings?.count || 0;
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+    return (
+        <div className="bg-gradient-to-b from-stone-50 via-stone-50 to-emerald-50/30 min-h-screen pb-20">
+            <div className="container-custom py-14">
+
+                <div className="grid lg:grid-cols-2 gap-16">
 
                     {/* IMAGE SECTION */}
                     <div>
-                        <div className="bg-white rounded-3xl shadow-sm border aspect-square relative mb-6 overflow-hidden">
+
+                        <div className="relative bg-white rounded-3xl shadow-2xl border border-emerald-100 aspect-square overflow-hidden mb-6">
 
                             {discountPercent > 0 && (
-                                <span className="absolute top-4 right-4 bg-green-600 text-white px-4 py-1.5 rounded-md font-bold z-10">
-                                    🔥 {discountPercent}% OFF
+                                <span className="absolute top-4 right-4 bg-emerald-700 text-white px-4 py-1.5 rounded-full text-sm font-bold shadow-lg">
+                                    {discountPercent}% OFF
                                 </span>
                             )}
 
@@ -216,61 +159,96 @@ const ProductDetails = () => {
                                 />
                             )}
                         </div>
+
+                        {/* THUMBNAILS */}
+                        {product.images?.length > 1 && (
+                            <div className="flex gap-4">
+                                {product.images.map((img, i) => {
+                                    const url = img?.url || img;
+                                    return (
+                                        <button
+                                            key={i}
+                                            onClick={() => setSelectedImage(url)}
+                                            className={`w-20 h-20 rounded-xl overflow-hidden border-2 transition ${selectedImage === url
+                                                ? 'border-emerald-600'
+                                                : 'border-gray-200'
+                                                }`}
+                                        >
+                                            <img
+                                                src={url}
+                                                alt=""
+                                                className="w-full h-full object-cover"
+                                            />
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        )}
                     </div>
 
                     {/* DETAILS SECTION */}
                     <div>
 
-                        <h1 className="text-4xl font-bold mb-4">
+                        <h1 className="text-4xl font-serif font-bold mb-6">
                             {product.name}
                         </h1>
 
-                        <div className="flex items-center gap-4 mb-6">
-                            <span className="text-xl font-bold">
+                        {/* RATING */}
+                        <div className="flex items-center gap-4 mb-8">
+                            <div className="text-xl font-bold">
                                 {averageRating.toFixed(1)}
-                            </span>
-                            {renderStars(averageRating)}
-                            <span className="text-gray-500">
+                            </div>
+                            <div className="flex gap-1 text-yellow-400">
+                                {[1, 2, 3, 4, 5].map(star => (
+                                    <span key={star}>
+                                        {star <= Math.round(averageRating) ? '★' : '☆'}
+                                    </span>
+                                ))}
+                            </div>
+                            <span className="text-gray-500 text-sm">
                                 ({reviewCount} Reviews)
                             </span>
                         </div>
 
                         {/* PRICE */}
-                        <div className="flex items-baseline gap-4 mb-4">
-                            <span className="text-5xl font-bold text-green-600">
-                                ₹{finalPrice.toLocaleString('en-IN')}
-                            </span>
+                        <div className="mb-8">
+                            <div className="flex items-end gap-4">
+                                <span className="text-5xl font-bold text-emerald-700">
+                                    ₹{finalPrice.toLocaleString('en-IN')}
+                                </span>
 
-                            {referencePrice > finalPrice && (
-                                <>
+                                {referencePrice > finalPrice && (
                                     <span className="text-2xl line-through text-gray-400">
                                         ₹{referencePrice.toLocaleString('en-IN')}
                                     </span>
-                                    <span className="text-green-600 font-bold">
-                                        {discountPercent}% OFF
-                                    </span>
-                                </>
+                                )}
+                            </div>
+
+                            {savings > 0 && (
+                                <div className="text-emerald-600 font-semibold mt-2">
+                                    You Save ₹{savings.toLocaleString('en-IN')}
+                                </div>
                             )}
                         </div>
 
-                        {savings > 0 && (
-                            <div className="mb-6 text-gray-600 font-medium">
-                                You Save ₹{savings.toLocaleString('en-IN')}
-                            </div>
-                        )}
-
-                        {/* QUANTITY + CART */}
+                        {/* ACTION BUTTONS */}
                         {product.stock > 0 ? (
-                            <div className="flex gap-4">
+                            <div className="flex flex-col sm:flex-row gap-4 mt-8">
                                 <button
                                     onClick={handleAddToCart}
-                                    className="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-bold"
+                                    className="flex-1 bg-white border border-emerald-600/30 text-emerald-700 hover:bg-emerald-50 py-4 rounded-2xl font-bold text-lg shadow-sm hover:shadow transition-all duration-300"
                                 >
                                     Add to Cart
                                 </button>
+                                <button
+                                    onClick={handleBuyNow}
+                                    className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-2xl font-bold text-lg shadow-[0_4px_14px_rgba(16,185,129,0.3)] hover:shadow-[0_6px_20px_rgba(16,185,129,0.4)] transition-all duration-300 transform hover:-translate-y-0.5"
+                                >
+                                    Buy Now
+                                </button>
                             </div>
                         ) : (
-                            <div className="text-red-600 font-bold">
+                            <div className="bg-red-50 text-red-600 font-bold py-4 rounded-2xl text-center border border-red-100 mt-8">
                                 Out of Stock
                             </div>
                         )}
@@ -278,21 +256,23 @@ const ProductDetails = () => {
                 </div>
 
                 {/* TABS */}
-                <div className="mt-16">
-                    <div className="flex border-b mb-8">
+                <div className="mt-20">
+
+                    <div className="flex gap-8 border-b border-emerald-100 mb-10">
                         <button
                             onClick={() => setActiveTab('description')}
-                            className={`px-6 py-3 font-bold ${activeTab === 'description'
-                                ? 'border-b-2 border-green-600 text-green-600'
+                            className={`pb-4 font-semibold ${activeTab === 'description'
+                                ? 'text-emerald-700 border-b-2 border-emerald-600'
                                 : 'text-gray-500'
                                 }`}
                         >
                             Description
                         </button>
+
                         <button
                             onClick={() => setActiveTab('reviews')}
-                            className={`px-6 py-3 font-bold ${activeTab === 'reviews'
-                                ? 'border-b-2 border-green-600 text-green-600'
+                            className={`pb-4 font-semibold ${activeTab === 'reviews'
+                                ? 'text-emerald-700 border-b-2 border-emerald-600'
                                 : 'text-gray-500'
                                 }`}
                         >
@@ -300,9 +280,11 @@ const ProductDetails = () => {
                         </button>
                     </div>
 
-                    <div className="bg-white p-8 rounded-2xl shadow-sm">
+                    <div className="bg-white p-10 rounded-3xl shadow-xl border border-emerald-100">
                         {activeTab === 'description' ? (
-                            <p>{product.description}</p>
+                            <p className="leading-relaxed text-gray-700">
+                                {product.description}
+                            </p>
                         ) : (
                             <ProductReviews
                                 productId={id}
@@ -311,6 +293,7 @@ const ProductDetails = () => {
                             />
                         )}
                     </div>
+
                 </div>
             </div>
         </div>

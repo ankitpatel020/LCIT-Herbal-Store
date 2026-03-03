@@ -1,144 +1,301 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React from "react";
+import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import CountUp from "react-countup";
+import { FiUsers, FiAward, FiZap } from "react-icons/fi";
+import { FaLeaf } from "react-icons/fa";
 
 const About = () => {
+    const pillars = [
+        {
+            title: "Our Vision",
+            icon: <FiZap className="w-8 h-8" />,
+            description:
+                "To build a student-driven herbal science ecosystem where traditional botanicals meet rigorous scientific validation — real R&D experience, not just theory.",
+        },
+        {
+            title: "Our Mission",
+            icon: <FiAward className="w-8 h-8" />,
+            description:
+                "To craft lab-verified, research-backed herbal wellness products while training the next generation of chemists in ethical formulation, quality assurance, and scalable production.",
+        },
+    ];
+
+    const impact = [
+        { value: 100, label: "Student-driven", suffix: "%", icon: <FiUsers className="w-10 h-10" /> },
+        { value: 50, label: "Formulas Developed", suffix: "+", icon: <FaLeaf className="w-10 h-10" /> },
+        { value: 100, label: "Lab-grade Standards", suffix: "%", icon: <FiZap className="w-10 h-10" /> },
+        { value: 100, label: "Faculty Mentorship", suffix: "%", icon: <FiAward className="w-10 h-10" /> },
+    ];
+
     return (
-        <div className="bg-white min-h-screen">
-            {/* Hero Section */}
-            <section className="relative h-[60vh] flex items-center justify-center text-center text-white">
-                <div className="absolute inset-0">
-                    <img
-                        src="/LCITCollegeCampus.webp"
-                        alt="LCIT College Campus"
-                        className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-b from-black/70 to-black/50"></div>
-                </div>
-                <div className="relative z-10 container-custom px-4">
-                    <span className="inline-block py-1 px-3 rounded-full bg-green-500/20 border border-green-400 text-green-300 text-sm font-semibold mb-4 backdrop-blur-sm">
-                        Department of Chemistry
-                    </span>
-                    <h1 className="text-3xl md:text-5xl font-display font-bold mb-4 leading-tight">
-                        LCIT College of Commerce & Science
-                    </h1>
-                    <p className="text-xl md:text-2xl text-gray-200 font-light">
-                        Bodri, Bilaspur (C.G.)
-                    </p>
-                </div>
-            </section>
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8 }}
+            className="min-h-screen bg-gradient-to-b from-stone-50 via-stone-50 to-emerald-50/30"
+        >
 
-            {/* Introduction */}
-            <section className="py-20">
-                <div className="container-custom grid md:grid-cols-2 gap-16 items-center">
-                    <div>
-                        <h2 className="text-3xl font-bold text-gray-900 mb-6">Bridging Education & Innovation</h2>
-                        <div className="space-y-4 text-gray-600 text-lg leading-relaxed">
-                            <p>
-                                Welcome to the <strong>LCIT Herbal Store</strong>, a unique initiative by the Department of Chemistry. We believe in practical learning that goes beyond textbooks.
-                            </p>
-                            <p>
-                                Our platform showcases products researched, formulated, and developed by our talented students under the expert guidance of our faculty. Located in Bodri, Bilaspur, we utilize the rich herbal biodiversity of Chhattisgarh to create authentic, natural remedies.
-                            </p>
-                        </div>
+            {/* HERO — split with campus image */}
+            <section className="relative overflow-hidden">
+                <div className="grid lg:grid-cols-2 min-h-[80vh]">
+                    {/* Left — text */}
+                    <div className="flex flex-col justify-center px-10 lg:px-20 py-28 bg-white">
+                        <motion.span
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="inline-block mb-4 text-xs font-bold uppercase tracking-widest text-emerald-600 border border-emerald-200 bg-emerald-50 px-4 py-1.5 rounded-full w-fit"
+                        >
+                            Department of Chemistry · LCIT
+                        </motion.span>
+                        <motion.h1
+                            initial={{ opacity: 0, y: 30 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.15 }}
+                            className="text-5xl md:text-6xl font-serif font-extrabold text-gray-900 leading-tight mb-6"
+                        >
+                            Curiosity{" "}
+                            <span className="text-emerald-700">→</span> Science{" "}
+                            <span className="text-emerald-700">→</span> Wellness
+                        </motion.h1>
+                        <motion.p
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.3 }}
+                            className="text-lg text-gray-600 leading-relaxed max-w-lg"
+                        >
+                            Where LCIT students transform classroom chemistry into safe, lab-verified herbal formulations under expert mentorship.
+                        </motion.p>
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.45 }}
+                            className="mt-8 flex gap-4 flex-wrap"
+                        >
+                            <Link to="/shop" className="px-8 py-3.5 bg-emerald-700 text-white rounded-2xl font-semibold hover:bg-emerald-800 transition">
+                                Explore Products
+                            </Link>
+                            <Link to="/manufacturing" className="px-8 py-3.5 border-2 border-emerald-700 text-emerald-800 rounded-2xl font-semibold hover:bg-emerald-50 transition">
+                                Our Process
+                            </Link>
+                        </motion.div>
                     </div>
-                    <div className="relative">
-                        <div className="absolute -inset-4 bg-green-100 rounded-xl transform rotate-3"></div>
+
+                    {/* Right — campus image */}
+                    <div className="relative hidden lg:block">
                         <img
-                            src="/DepartmentofScience.jpg"
-                            alt="Department of Chemistry Team"
-                            className="relative rounded-xl shadow-lg w-full"
+                            src="/assets/Campus/LCITCampus2.png"
+                            alt="LCIT Campus"
+                            className="absolute inset-0 w-full h-full object-cover"
                         />
+                        <div className="absolute inset-0 bg-gradient-to-r from-white/30 to-transparent" />
                     </div>
                 </div>
             </section>
 
-            {/* Vision & Mission */}
-            <section className="py-20 bg-gray-50">
-                <div className="container-custom">
-                    <div className="grid md:grid-cols-2 gap-10">
-                        <div className="bg-white p-10 rounded-2xl shadow-sm border-t-4 border-green-500">
-                            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center text-2xl mb-6">👁️</div>
-                            <h3 className="text-2xl font-bold mb-4 text-gray-900">Our Vision</h3>
-                            <p className="text-gray-600">
-                                To foster a culture of research, innovation, and entrepreneurship among students, empowering them to transform traditional herbal knowledge into modern, scientifically validated products.
-                            </p>
-                        </div>
-                        <div className="bg-white p-10 rounded-2xl shadow-sm border-t-4 border-blue-500">
-                            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center text-2xl mb-6">🎯</div>
-                            <h3 className="text-2xl font-bold mb-4 text-gray-900">Our Mission</h3>
-                            <p className="text-gray-600">
-                                To provide high-quality, natural herbal products to the community while offering students real-world experience in pharmaceutical sciences, manufacturing, and quality assurance.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </section>
+            {/* CORE STORY — lab images */}
+            <section className="py-24 bg-white border-y border-emerald-100">
+                <div className="container-custom grid lg:grid-cols-2 gap-16 items-center">
+                    {/* Lab image mosaic */}
+                    <motion.div
+                        initial={{ opacity: 0, x: -40 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.8 }}
+                        className="grid grid-cols-2 gap-4"
+                    >
+                        <img
+                            src="/assets/lab/lab 01.jpg"
+                            alt="Lab Work 1"
+                            className="rounded-2xl shadow-lg object-cover w-full h-48 col-span-2"
+                        />
+                        <img
+                            src="/assets/lab/lab 02.jpg"
+                            alt="Lab Work 2"
+                            className="rounded-2xl shadow-md object-cover w-full h-40"
+                        />
+                        <img
+                            src="/assets/lab/lab 03.jpg"
+                            alt="Lab Work 3"
+                            className="rounded-2xl shadow-md object-cover w-full h-40"
+                        />
+                    </motion.div>
 
-            {/* Stats / Process */}
-            <section className="py-20 bg-green-900 text-white">
-                <div className="container-custom">
-                    <div className="text-center mb-16">
-                        <h2 className="text-3xl font-bold mb-4">The LCIT Standard</h2>
-                        <p className="text-green-200 max-w-2xl mx-auto">From the lush gardens of Chhattisgarh to our advanced laboratories.</p>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
-                        <div className="p-6">
-                            <div className="text-5xl font-bold text-green-400 mb-2">100%</div>
-                            <div className="text-lg">Student Leads</div>
-                        </div>
-                        <div className="p-6">
-                            <div className="text-5xl font-bold text-green-400 mb-2">50+</div>
-                            <div className="text-lg">Herbal Formulations</div>
-                        </div>
-                        <div className="p-6">
-                            <div className="text-5xl font-bold text-green-400 mb-2">ISO</div>
-                            <div className="text-lg">Lab Standards</div>
-                        </div>
-                        <div className="p-6">
-                            <div className="text-5xl font-bold text-green-400 mb-2">24/7</div>
-                            <div className="text-lg">Faculty Mentorship</div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* Student Voice */}
-            <section className="py-20 container-custom">
-                <div className="max-w-4xl mx-auto bg-green-50 rounded-3xl p-12 text-center relative overflow-hidden">
-                    <div className="text-5xl text-green-200 absolute top-4 left-4">"</div>
-                    <div className="relative z-10">
-                        <p className="text-xl md:text-2xl text-gray-800 font-medium italic mb-8">
-                            "The practical exposure at LCIT is unmatched. Creating products that people actually use and love gives us immense confidence as future pharmacists and scientists."
+                    <motion.div
+                        initial={{ opacity: 0, x: 40 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.8 }}
+                        className="space-y-6"
+                    >
+                        <h2 className="text-4xl font-serif font-bold text-gray-900">
+                            From Lab Bench to Wellness Product
+                        </h2>
+                        <p className="text-gray-700 text-lg">
+                            Students conduct real extraction, formulation, stability testing, and microbial validation — transforming botanical research into market-ready herbal solutions.
                         </p>
-                        <div className="flex items-center justify-center gap-4">
-                            <div className="w-12 h-12 rounded-full bg-gray-300 overflow-hidden">
-                                <img src="https://ui-avatars.com/api/?name=Student+Rep&background=random" alt="Student" />
+                        <p className="italic text-emerald-800 border-l-4 border-emerald-300 pl-4">
+                            "Science-driven herbal innovation rooted in academic excellence."
+                        </p>
+                    </motion.div>
+                </div>
+            </section>
+
+            {/* VISION + MISSION */}
+            <section className="py-24">
+                <div className="container-custom grid md:grid-cols-2 gap-12">
+                    {pillars.map((pillar, i) => (
+                        <motion.div
+                            key={i}
+                            initial={{ opacity: 0, y: 40 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.6, delay: i * 0.2 }}
+                            className="bg-white p-10 rounded-3xl shadow-lg border border-emerald-100 hover:-translate-y-2 transition-all"
+                        >
+                            <div className="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center text-emerald-700 mb-6">
+                                {pillar.icon}
                             </div>
-                            <div className="text-left">
-                                <div className="font-bold text-gray-900">Ankit Patel</div>
-                                <div className="text-sm text-green-600">B.Sc. Student, Dept of Chemistry</div>
-                            </div>
-                        </div>
+                            <h3 className="text-3xl font-serif font-bold mb-4">
+                                {pillar.title}
+                            </h3>
+                            <p className="text-gray-700 text-lg">
+                                {pillar.description}
+                            </p>
+                        </motion.div>
+                    ))}
+                </div>
+            </section>
+
+            {/* RESEARCH TIMELINE */}
+            <section className="py-24 bg-white">
+                <div className="container-custom max-w-4xl mx-auto">
+                    <h2 className="text-4xl font-serif font-bold text-center mb-16">
+                        Our Research Journey
+                    </h2>
+
+                    <div className="space-y-12">
+                        {[
+                            { step: "01", title: "Botanical Research", text: "Scientific literature review and phytochemical screening." },
+                            { step: "02", title: "Extraction & Isolation", text: "Solvent extraction and compound purification." },
+                            { step: "03", title: "Formulation Testing", text: "Stability, pH, and microbial analysis." },
+                            { step: "04", title: "Product Validation", text: "Quality assurance under faculty supervision." },
+                        ].map((item, i) => (
+                            <motion.div
+                                key={i}
+                                initial={{ opacity: 0, x: -40 }}
+                                whileInView={{ opacity: 1, x: 0 }}
+                                transition={{ duration: 0.6, delay: i * 0.2 }}
+                                className="flex gap-6"
+                            >
+                                <div className="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center font-bold text-emerald-700 shrink-0">
+                                    {item.step}
+                                </div>
+                                <div className="pt-3">
+                                    <h4 className="text-xl font-bold mb-2">{item.title}</h4>
+                                    <p className="text-gray-600">{item.text}</p>
+                                </div>
+                            </motion.div>
+                        ))}
                     </div>
                 </div>
             </section>
 
-            {/* Contact CTA */}
-            <section className="py-20 bg-gray-900 text-white">
-                <div className="container-custom text-center">
-                    <h2 className="text-3xl font-bold mb-6">Visit Our Campus</h2>
-                    <p className="text-gray-400 mb-10 max-w-2xl mx-auto">
-                        LCIT College of Commerce & Science, Bodri, Bilaspur (C.G.)
-                        <br />
-                        Come see our labs and meet the team.
-                    </p>
-                    <Link to="/help-center" className="btn bg-white text-gray-900 hover:bg-gray-100 px-8 py-3 rounded-full font-bold">
-                        Get in Touch
+            {/* IMPACT STATS */}
+            <section className="py-24 bg-emerald-900 text-white">
+                <div className="container-custom grid grid-cols-2 md:grid-cols-4 gap-10 text-center">
+                    {impact.map((stat, i) => (
+                        <motion.div
+                            key={i}
+                            initial={{ opacity: 0, y: 40 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.6, delay: i * 0.2 }}
+                        >
+                            <div className="text-emerald-300 text-5xl flex justify-center mb-4">
+                                {stat.icon}
+                            </div>
+                            <h4 className="text-4xl font-serif font-extrabold">
+                                <CountUp end={stat.value} duration={2} />
+                                {stat.suffix}
+                            </h4>
+                            <p className="uppercase text-sm text-emerald-200 tracking-wider mt-2">
+                                {stat.label}
+                            </p>
+                        </motion.div>
+                    ))}
+                </div>
+            </section>
+
+            {/* TEAM PHOTO */}
+            <section className="py-24 bg-white">
+                <div className="container-custom max-w-5xl mx-auto text-center">
+                    <motion.span
+                        initial={{ opacity: 0 }}
+                        whileInView={{ opacity: 1 }}
+                        className="inline-block mb-4 text-xs font-bold uppercase tracking-widest text-emerald-600 border border-emerald-200 bg-emerald-50 px-4 py-1.5 rounded-full"
+                    >
+                        Our Team
+                    </motion.span>
+                    <motion.h2
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        className="text-4xl font-serif font-bold text-gray-900 mb-4"
+                    >
+                        The Minds Behind the Formulations
+                    </motion.h2>
+                    <motion.p
+                        initial={{ opacity: 0 }}
+                        whileInView={{ opacity: 1 }}
+                        transition={{ delay: 0.2 }}
+                        className="text-gray-600 mb-10 text-lg"
+                    >
+                        Students, researchers, and faculty mentors united by a shared purpose — bringing rigorous science to herbal wellness.
+                    </motion.p>
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.97 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.7 }}
+                        className="rounded-3xl overflow-hidden shadow-2xl border border-emerald-100"
+                    >
+                        <img
+                            src="/assets/group/group.jpeg"
+                            alt="LCIT Herbal Store Team"
+                            className="w-full object-cover max-h-[520px]"
+                        />
+                    </motion.div>
+                </div>
+            </section>
+
+            {/* CAMPUS */}
+            <section className="py-8 bg-stone-50">
+                <div className="container-custom max-w-5xl mx-auto">
+                    <motion.img
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.7 }}
+                        src="/assets/Campus/LCITCampus1.jpg"
+                        alt="LCIT Campus"
+                        className="rounded-3xl shadow-xl w-full object-cover max-h-80"
+                    />
+                </div>
+            </section>
+
+            {/* FINAL CTA */}
+            <section className="py-24 bg-emerald-50 text-center">
+                <h2 className="text-4xl font-serif font-bold text-gray-900 mb-6">
+                    Discover Science-Backed Nature
+                </h2>
+                <p className="text-lg text-gray-700 mb-10">
+                    Explore herbal formulations developed through real research and laboratory precision.
+                </p>
+                <div className="flex justify-center gap-6 flex-wrap">
+                    <Link to="/shop" className="px-10 py-4 bg-emerald-700 text-white rounded-2xl font-semibold hover:bg-emerald-800 transition">
+                        Explore Products
+                    </Link>
+                    <Link to="/manufacturing" className="px-10 py-4 border-2 border-emerald-700 text-emerald-800 rounded-2xl font-semibold hover:bg-emerald-100 transition">
+                        View Manufacturing
                     </Link>
                 </div>
             </section>
 
-        </div>
+        </motion.div>
     );
 };
 

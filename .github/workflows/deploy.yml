@@ -55,6 +55,7 @@ jobs:
       run: |
         sed -i "s|ankit4455/lcit-backend:latest|${{ secrets.DOCKER_USERNAME }}/lcit-backend:${GITHUB_SHA::7}|g" k8s/backend.yaml
         sed -i "s|ankit4455/lcit-frontend:latest|${{ secrets.DOCKER_USERNAME }}/lcit-frontend:${GITHUB_SHA::7}|g" k8s/frontend.yaml
+        sed -i "s|HOST_NAME|${{ secrets.EC2_HOST }}.nip.io|g" k8s/ingress.yaml
 
     - name: Copy k8s files to EC2
       uses: appleboy/scp-action@v0.1.7
@@ -88,6 +89,7 @@ jobs:
           kubectl apply -f mongo.yaml
           kubectl apply -f backend.yaml
           kubectl apply -f frontend.yaml
+          kubectl apply -f cluster-issuer.yaml
           kubectl apply -f ingress.yaml
 
           echo "Restarting deployments to pick up new image..."
