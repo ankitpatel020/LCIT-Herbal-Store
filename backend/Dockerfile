@@ -1,18 +1,26 @@
 FROM node:18-alpine
 
+# Create non-root user
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
 WORKDIR /app
 
-# Install dependencies first (better layer caching)
+# Install dependencies first
 COPY package*.json ./
 RUN npm ci --omit=dev
 
-# Copy remaining source code
+# Copy app source
 COPY . .
 
-# Remove any accidental .env if present
+# Remove accidental .env if present
 RUN rm -f .env || true
 
 ENV NODE_ENV=production
+
+# Change ownership
+RUN chown -R appuser:appgroup /app
+
+USER appuser
 
 EXPOSE 5000
 

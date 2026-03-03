@@ -136,9 +136,9 @@ const ProductDetails = () => {
 
     return (
         <div className="bg-gradient-to-b from-stone-50 via-stone-50 to-emerald-50/30 min-h-screen pb-20">
-            <div className="container-custom py-14">
+            <div className="container-custom py-8 md:py-14">
 
-                <div className="grid lg:grid-cols-2 gap-16">
+                <div className="grid lg:grid-cols-2 gap-10 lg:gap-16">
 
                     {/* IMAGE SECTION */}
                     <div>
@@ -189,7 +189,7 @@ const ProductDetails = () => {
                     {/* DETAILS SECTION */}
                     <div>
 
-                        <h1 className="text-4xl font-serif font-bold mb-6">
+                        <h1 className="text-3xl sm:text-4xl font-serif font-bold mb-4 sm:mb-6 leading-tight">
                             {product.name}
                         </h1>
 
@@ -212,13 +212,13 @@ const ProductDetails = () => {
 
                         {/* PRICE */}
                         <div className="mb-8">
-                            <div className="flex items-end gap-4">
-                                <span className="text-5xl font-bold text-emerald-700">
+                            <div className="flex flex-wrap items-end gap-3 sm:gap-4">
+                                <span className="text-4xl sm:text-5xl font-bold text-emerald-700">
                                     ₹{finalPrice.toLocaleString('en-IN')}
                                 </span>
 
                                 {referencePrice > finalPrice && (
-                                    <span className="text-2xl line-through text-gray-400">
+                                    <span className="text-xl sm:text-2xl line-through text-gray-400">
                                         ₹{referencePrice.toLocaleString('en-IN')}
                                     </span>
                                 )}
@@ -258,12 +258,12 @@ const ProductDetails = () => {
                 {/* TABS */}
                 <div className="mt-20">
 
-                    <div className="flex gap-8 border-b border-emerald-100 mb-10">
+                    <div className="flex gap-6 sm:gap-8 border-b border-emerald-100 mb-8 sm:mb-10 overflow-x-auto whitespace-nowrap">
                         <button
                             onClick={() => setActiveTab('description')}
-                            className={`pb-4 font-semibold ${activeTab === 'description'
+                            className={`pb-4 font-semibold text-sm sm:text-base ${activeTab === 'description'
                                 ? 'text-emerald-700 border-b-2 border-emerald-600'
-                                : 'text-gray-500'
+                                : 'text-gray-500 hover:text-emerald-600 transition'
                                 }`}
                         >
                             Description
@@ -271,16 +271,16 @@ const ProductDetails = () => {
 
                         <button
                             onClick={() => setActiveTab('reviews')}
-                            className={`pb-4 font-semibold ${activeTab === 'reviews'
+                            className={`pb-4 font-semibold text-sm sm:text-base ${activeTab === 'reviews'
                                 ? 'text-emerald-700 border-b-2 border-emerald-600'
-                                : 'text-gray-500'
+                                : 'text-gray-500 hover:text-emerald-600 transition'
                                 }`}
                         >
                             Reviews
                         </button>
                     </div>
 
-                    <div className="bg-white p-10 rounded-3xl shadow-xl border border-emerald-100">
+                    <div className="bg-white p-6 sm:p-10 rounded-2xl sm:rounded-3xl shadow-xl border border-emerald-100">
                         {activeTab === 'description' ? (
                             <p className="leading-relaxed text-gray-700">
                                 {product.description}

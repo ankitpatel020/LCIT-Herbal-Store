@@ -16,6 +16,7 @@ const Shop = () => {
     const [sortBy, setSortBy] = useState('newest');
     const [priceRange, setPriceRange] = useState([0, 1000]);
     const [rating, setRating] = useState(0);
+    const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
 
     const categories = [
         'all',
@@ -87,8 +88,25 @@ const Shop = () => {
 
             <div className="container-custom py-12 grid lg:grid-cols-4 gap-10">
 
+                {/* Mobile Filter Overlay */}
+                <div
+                    className={`fixed inset-0 bg-black/50 z-40 transition-opacity duration-300 lg:hidden ${isMobileFiltersOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                    onClick={() => setIsMobileFiltersOpen(false)}
+                />
+
                 {/* SIDEBAR FILTERS */}
-                <div className="hidden lg:block bg-white p-6 rounded-2xl shadow-md border border-emerald-100 space-y-6 h-fit sticky top-24">
+                <div className={`
+                    fixed inset-y-0 left-0 w-80 max-w-[85vw] bg-white z-50 p-6 overflow-y-auto transition-transform duration-300 transform flex flex-col gap-6
+                    lg:static lg:block lg:w-auto lg:max-w-none lg:z-auto lg:p-6 lg:rounded-2xl lg:shadow-md lg:border lg:border-emerald-100 lg:h-fit lg:sticky lg:top-24 lg:translate-x-0
+                    ${isMobileFiltersOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+                `}>
+
+                    <div className="flex justify-between items-center lg:hidden pb-4 border-b">
+                        <h2 className="text-xl font-bold">Filters</h2>
+                        <button onClick={() => setIsMobileFiltersOpen(false)} className="p-2 text-2xl">
+                            <FiX />
+                        </button>
+                    </div>
 
                     {/* Search */}
                     <div>
@@ -166,15 +184,23 @@ const Shop = () => {
                 {/* PRODUCTS AREA */}
                 <div className="lg:col-span-3">
 
-                    {/* Sort Bar */}
-                    <div className="flex justify-between items-center mb-8">
-                        <span className="text-gray-600">
-                            {products?.length || 0} Products Found
-                        </span>
+                    {/* Sort & Mobile Filter Bar */}
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+                        <div className="flex items-center gap-4 w-full sm:w-auto">
+                            <button
+                                onClick={() => setIsMobileFiltersOpen(true)}
+                                className="lg:hidden flex items-center justify-center gap-2 bg-white border border-emerald-200 px-4 py-2 rounded-lg font-semibold shadow-sm w-full sm:w-auto"
+                            >
+                                <FiFilter /> Filters
+                            </button>
+                            <span className="text-gray-600 hidden sm:block">
+                                {products?.length || 0} Products Found
+                            </span>
+                        </div>
                         <select
                             value={sortBy}
                             onChange={(e) => setSortBy(e.target.value)}
-                            className="p-2 border rounded-lg"
+                            className="p-2 border rounded-lg w-full sm:w-auto bg-white"
                         >
                             <option value="newest">Newest</option>
                             <option value="price-low">Price Low → High</option>

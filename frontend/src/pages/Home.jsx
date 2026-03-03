@@ -36,45 +36,45 @@ const Home = () => {
         <div className="min-h-screen bg-gradient-to-b from-stone-50 via-stone-50 to-emerald-50/30">
 
             {/* HERO */}
-            <section className="relative pt-32 pb-28 overflow-hidden">
+            <section className="relative pt-24 md:pt-32 pb-16 md:pb-28 overflow-hidden">
 
                 {/* Floating animated leaf blur */}
                 <motion.div
                     animate={{ y: [0, -20, 0] }}
                     transition={{ duration: 6, repeat: Infinity }}
-                    className="absolute -left-20 top-20 w-96 h-96 bg-emerald-300/20 rounded-full blur-3xl"
+                    className="absolute -left-20 top-20 w-64 md:w-96 h-64 md:h-96 bg-emerald-300/20 rounded-full blur-3xl"
                 />
 
-                <div className="container-custom relative z-10">
+                <div className="container-custom relative z-10 px-4 md:px-8">
                     <motion.div
                         initial="hidden"
                         whileInView="visible"
                         viewport={{ once: true }}
                         variants={stagger}
-                        className="grid lg:grid-cols-2 gap-16 items-center"
+                        className="grid lg:grid-cols-2 gap-10 md:gap-16 items-center"
                     >
 
                         {/* LEFT */}
-                        <motion.div variants={fadeUp} className="space-y-8">
-                            <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full bg-white shadow">
-                                <FaLeaf className="text-emerald-600" />
-                                <span className="text-sm font-semibold text-emerald-800 uppercase">
+                        <motion.div variants={fadeUp} className="space-y-6 md:space-y-8 text-center lg:text-left">
+                            <div className="inline-flex items-center gap-2 md:gap-3 px-4 md:px-5 py-2 md:py-2.5 rounded-full bg-white shadow">
+                                <FaLeaf className="text-emerald-600 text-sm md:text-base" />
+                                <span className="text-xs md:text-sm font-semibold text-emerald-800 uppercase">
                                     LCIT Chemistry Herbal Lab
                                 </span>
                             </div>
 
-                            <h1 className="text-6xl font-serif font-extrabold text-gray-900 leading-tight">
+                            <h1 className="text-4xl md:text-6xl font-serif font-extrabold text-gray-900 leading-tight">
                                 Purely <span className="text-emerald-700">Herbal</span><br />
                                 Crafted with Care
                             </h1>
 
-                            <p className="text-xl text-gray-700 max-w-xl">
+                            <p className="text-lg md:text-xl text-gray-700 max-w-xl mx-auto lg:mx-0">
                                 Lab-verified botanical blends where tradition meets science.
                             </p>
 
                             <Link
                                 to="/shop"
-                                className="inline-flex items-center gap-3 bg-emerald-700 text-white px-8 py-4 rounded-2xl font-semibold hover:bg-emerald-800 transition"
+                                className="inline-flex items-center justify-center gap-3 bg-emerald-700 text-white px-6 md:px-8 py-3 md:py-4 rounded-2xl font-semibold hover:bg-emerald-800 transition w-full sm:w-auto"
                             >
                                 Discover Remedies
                                 <FiArrowRight />

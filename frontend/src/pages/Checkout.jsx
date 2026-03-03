@@ -290,13 +290,13 @@ const Checkout = () => {
                                 Payment Method
                             </h2>
 
-                            <div className="flex gap-6">
+                            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
                                 {['COD', 'Razorpay'].map(method => (
                                     <label
                                         key={method}
-                                        className={`flex items-center gap-3 px-6 py-3 border rounded-2xl cursor-pointer transition ${paymentMethod === method
-                                            ? 'border-emerald-600 bg-emerald-50'
-                                            : 'border-gray-200'
+                                        className={`flex-1 flex items-center justify-center gap-3 px-6 py-4 border rounded-2xl cursor-pointer transition font-bold ${paymentMethod === method
+                                            ? 'border-emerald-600 bg-emerald-50 text-emerald-800 shadow-sm'
+                                            : 'border-gray-200 text-gray-700 hover:bg-gray-50'
                                             }`}
                                     >
                                         <input

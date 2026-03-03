@@ -1,21 +1,10 @@
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: mongo-pvc
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
----
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: mongo
 spec:
-  strategy:
-    type: Recreate
+  serviceName: mongo-service
+  replicas: 1
   selector:
     matchLabels:
       app: mongo
@@ -43,7 +32,6 @@ spec:
                 secretKeyRef:
                   name: mongo-secret
                   key: mongo-root-password
-
           resources:
             requests:
               memory: "256Mi"
@@ -52,19 +40,11 @@ spec:
               memory: "512Mi"
               cpu: "500m"
 
-      volumes:
-        - name: mongo-storage
-          persistentVolumeClaim:
-            claimName: mongo-pvc
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: mongo-service
-spec:
-  selector:
-    app: mongo
-  ports:
-    - protocol: TCP
-      port: 27017
-      targetPort: 27017
+  volumeClaimTemplates:
+    - metadata:
+        name: mongo-storage
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi

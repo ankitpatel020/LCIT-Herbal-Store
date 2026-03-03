@@ -2,7 +2,12 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
+
+env:
+  REGISTRY: docker.io
+  FRONTEND_IMAGE: lcit-frontend
+  BACKEND_IMAGE: lcit-backend
 
 jobs:
   build-and-push:
@@ -12,92 +17,93 @@ jobs:
       image_tag: ${{ steps.vars.outputs.TAG }}
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set image tag
-      id: vars
-      run: echo "TAG=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+      - name: Set image tag
+        id: vars
+        run: echo "TAG=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
 
-    - name: Log in to Docker Hub
-      uses: docker/login-action@v3
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: Build and push Frontend
-      uses: docker/build-push-action@v5
-      with:
-        context: ./frontend
-        push: true
-        tags: |
-          ${{ secrets.DOCKER_USERNAME }}/lcit-frontend:latest
-          ${{ secrets.DOCKER_USERNAME }}/lcit-frontend:${{ steps.vars.outputs.TAG }}
+      - name: Build & Push Frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/${{ env.FRONTEND_IMAGE }}:${{ steps.vars.outputs.TAG }}
 
-    - name: Build and push Backend
-      uses: docker/build-push-action@v5
-      with:
-        context: ./backend
-        push: true
-        tags: |
-          ${{ secrets.DOCKER_USERNAME }}/lcit-backend:latest
-          ${{ secrets.DOCKER_USERNAME }}/lcit-backend:${{ steps.vars.outputs.TAG }}
+      - name: Build & Push Backend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/${{ env.BACKEND_IMAGE }}:${{ steps.vars.outputs.TAG }}
 
   deploy:
     needs: build-and-push
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Update Kubernetes Manifests
-      run: |
-        sed -i "s|ankit4455/lcit-backend:latest|${{ secrets.DOCKER_USERNAME }}/lcit-backend:${GITHUB_SHA::7}|g" k8s/backend.yaml
-        sed -i "s|ankit4455/lcit-frontend:latest|${{ secrets.DOCKER_USERNAME }}/lcit-frontend:${GITHUB_SHA::7}|g" k8s/frontend.yaml
-        sed -i "s|HOST_NAME|${{ secrets.EC2_HOST }}.nip.io|g" k8s/ingress.yaml
+      - name: Update Kubernetes manifests
+        run: |
+          sed -i "s|IMAGE_BACKEND|${{ secrets.DOCKER_USERNAME }}/lcit-backend:${{ needs.build-and-push.outputs.image_tag }}|g" k8s/backend.yaml
+          sed -i "s|IMAGE_FRONTEND|${{ secrets.DOCKER_USERNAME }}/lcit-frontend:${{ needs.build-and-push.outputs.image_tag }}|g" k8s/frontend.yaml
+          sed -i "s|HOST_NAME|${{ secrets.EC2_HOST }}.nip.io|g" k8s/ingress.yaml
 
-    - name: Copy k8s files to EC2
-      uses: appleboy/scp-action@v0.1.7
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ${{ secrets.EC2_USER }}
-        key: ${{ secrets.EC2_SSH_KEY }}
-        source: "k8s/*"
-        target: "~/app"
+      - name: Copy k8s files to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "k8s/*"
+          target: "~/app"
 
-    - name: Deploy to Kubernetes
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ${{ secrets.EC2_USER }}
-        key: ${{ secrets.EC2_SSH_KEY }}
-        script: |
-          # Install/Setup K3s env
-          if command -v k3s &> /dev/null; then
+      - name: Deploy to K3s
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
             export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
             alias kubectl='k3s kubectl'
-          fi
 
-          cd ~/app/k8s
+            cd ~/app/k8s
 
-          echo "Checking cluster..."
-          kubectl get nodes
+            echo "Checking cluster..."
+            kubectl get nodes
 
-          echo "Applying manifests..."
-          kubectl apply -f secrets.yaml
-          kubectl apply -f mongo.yaml
-          kubectl apply -f backend.yaml
-          kubectl apply -f frontend.yaml
-          kubectl apply -f cluster-issuer.yaml
-          kubectl apply -f ingress.yaml
+            echo "Installing cert-manager if missing..."
+            if ! kubectl get namespace cert-manager &> /dev/null; then
+              kubectl apply -f https://github.com/cert-manager/cert-manager/releases/latest/download/cert-manager.yaml
+              sleep 60
+            fi
 
-          echo "Restarting deployments to pick up new image..."
-          kubectl rollout restart deployment/backend
-          kubectl rollout restart deployment/frontend
+            echo "Applying manifests..."
+            kubectl apply -f secrets.yaml
+            kubectl apply -f mongo.yaml
+            kubectl apply -f backend.yaml
+            kubectl apply -f frontend.yaml
+            kubectl apply -f cluster-issuer.yaml
+            kubectl apply -f ingress.yaml
 
-          echo "Waiting for rollout..."
-          kubectl rollout status deployment/backend
-          kubectl rollout status deployment/frontend
+            echo "Restarting deployments..."
+            kubectl rollout restart deployment/backend
+            kubectl rollout restart deployment/frontend
 
-          echo "Deployment successful."
+            echo "⏳ Waiting for rollout..."
+            kubectl rollout status deployment/backend
+            kubectl rollout status deployment/frontend
+
+            echo "Deployment successful."
