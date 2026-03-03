@@ -46,5 +46,23 @@ spec:
       spec:
         accessModes: ["ReadWriteOnce"]
         resources:
+        resources:
           requests:
             storage: 1Gi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo-service
+  labels:
+    app: mongo
+spec:
+  # Using a headless service for a StatefulSet
+  clusterIP: None
+  selector:
+    app: mongo
+  ports:
+    - protocol: TCP
+      port: 27017
+      targetPort: 27017
