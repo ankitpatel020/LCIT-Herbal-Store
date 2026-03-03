@@ -1,8 +1,12 @@
 /**
- * Admin Registration Script
+ * Admin Seeder / Reset Script
  * Run with: node adminRegister.js
- * Requires ADMIN_EMAIL and ADMIN_PASSWORD in your .env file
+ * Requires:
+ *   ADMIN_EMAIL
+ *   ADMIN_PASSWORD
+ *   MONGODB_URI
  */
+
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
@@ -11,56 +15,80 @@ dotenv.config();
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+const MONGODB_URI = process.env.MONGODB_URI;
 
 async function run() {
-    if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
-        console.error('❌ Error: ADMIN_EMAIL and ADMIN_PASSWORD must be defined in your .env file.');
+    if (!ADMIN_EMAIL || !ADMIN_PASSWORD || !MONGODB_URI) {
+        console.error('❌ Missing required environment variables.');
+        console.error('Required: ADMIN_EMAIL, ADMIN_PASSWORD, MONGODB_URI');
         process.exit(1);
     }
 
     try {
-        const uri = process.env.MONGODB_URI;
-        if (!uri) throw new Error('MONGODB_URI is not defined in .env');
-
         console.log('🔌 Connecting to MongoDB...');
-        await mongoose.connect(uri);
-        console.log('✅ Connected. DB:', mongoose.connection.db.databaseName);
+        await mongoose.connect(MONGODB_URI, {
+            autoIndex: true,
+        });
+
+        console.log('✅ Connected to DB:', mongoose.connection.db.databaseName);
 
         const db = mongoose.connection.db;
         const users = db.collection('users');
 
-        // Check if admin email already exists
+        // Ensure unique email index
+        await users.createIndex({ email: 1 }, { unique: true });
+
         const existingAdmin = await users.findOne({ email: ADMIN_EMAIL });
 
+        const hashedPassword = await bcrypt.hash(ADMIN_PASSWORD, 12);
+
         if (existingAdmin) {
-            console.log(`\n⚠️  User with email ${ADMIN_EMAIL} already exists in the database.`);
-            console.log('Cannot register fresh admin. If you need to reset the password, use the forgot password flow.');
+            console.log(`\n⚠️ Admin already exists. Resetting password...`);
+
+            await users.updateOne(
+                { email: ADMIN_EMAIL },
+                {
+                    $set: {
+                        password: hashedPassword,
+                        role: 'admin',
+                        isActive: true,
+                        isVerified: true,
+                        updatedAt: new Date(),
+                    },
+                }
+            );
+
+            console.log('✅ Admin password reset successful.');
         } else {
-            console.log(`\nCreating fresh admin account for: ${ADMIN_EMAIL}...`);
-            const hashed = await bcrypt.hash(ADMIN_PASSWORD, 10);
+            console.log(`\n🆕 Creating fresh admin account for ${ADMIN_EMAIL}...`);
 
             const result = await users.insertOne({
-                name: 'Admin',
+                name: 'Super Admin',
                 email: ADMIN_EMAIL,
-                password: hashed,
+                password: hashedPassword,
                 role: 'admin',
                 isActive: true,
                 isVerified: true,
                 createdAt: new Date(),
                 updatedAt: new Date(),
             });
-            console.log('✅ Admin successfully created with id:', result.insertedId);
 
-            console.log('\n🔑 Login credentials:');
-            console.log('   Email   :', ADMIN_EMAIL);
-            console.log('   Password:', ADMIN_PASSWORD);
-            console.log('');
+            console.log('✅ Admin created successfully.');
+            console.log('🆔 ID:', result.insertedId.toString());
         }
 
-    } catch (err) {
-        console.error('❌ Error:', err.message);
+        console.log('\n🎉 Admin setup completed successfully.');
+
+    } catch (error) {
+        if (error.code === 11000) {
+            console.error('❌ Duplicate email detected.');
+        } else {
+            console.error('❌ Error:', error.message);
+        }
     } finally {
         await mongoose.disconnect();
+        console.log('🔌 MongoDB disconnected.');
+        process.exit(0);
     }
 }
 
